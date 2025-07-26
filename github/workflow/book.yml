@@ -1,0 +1,30 @@
+name: Daily Court Booking
+
+on:
+  schedule:
+    - cron: '59 13 * * *'  # 6:59 AM PST = 13:59 UTC
+  workflow_dispatch:
+
+jobs:
+  run-booking:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npx playwright install --with-deps
+
+      - name: Run booking bot
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: node reserve.js
