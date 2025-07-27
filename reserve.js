@@ -1,3 +1,4 @@
+// playwright-booking-bot.js
 import { chromium } from 'playwright';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -7,10 +8,10 @@ const password = process.env.PASSWORD;
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"]; // Update as needed
+const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"]; // Update as needed
 
-// Configuration for production - reserve at 7:00 AM
-const BOOKING_HOUR = process.env.BOOKING_HOUR || 7; // Default to 7 AM for production
+// Configuration for testing - set your desired booking time here
+const BOOKING_HOUR = process.env.BOOKING_HOUR || 21; // Default to 21 (9 PM)
 const BOOKING_MINUTE = process.env.BOOKING_MINUTE || 0; // Default to exact hour
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -53,12 +54,7 @@ async function waitForCountdownToEnd(page) {
 
             console.log(`⏳ Current PST: ${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')} - Time until ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')}: ${hoursUntil}h ${minutesUntil}m ${secondsUntil}s`);
 
-            // Backup condition - check if time slot buttons are available
-            const timeSlotButton = await page.locator(`button:has-text("${TIME_SLOTS[0]}")`).isVisible().catch(() => false);
-            if (timeSlotButton) {
-                console.log('✅ Time slot buttons are now available! Starting booking...');
-                return true;
-            }
+            
 
             // Wait 1 second before checking again
             await delay(1000);
@@ -339,8 +335,6 @@ async function clickBook(page) {
 
 async function run() {
     console.time('⏱️ Total time');
-    console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
-    
     const browser = await chromium.launch({
         headless: process.env.NODE_ENV === 'production', // headless in production (GitHub Actions)
         slowMo: process.env.NODE_ENV === 'production' ? 0 : 500, // no slowMo in production
@@ -358,9 +352,12 @@ async function run() {
         await selectCourtType(page);
 
         // Phase 2: Wait for countdown to end
-        console.log(`⏰ Phase 2: Waiting for ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
-        await waitForCountdownToEnd(page);
-        
+        console.log('⏰ Phase 2: Waiting for 7:00 AM...');
+        while (true) {
+            await waitForCountdownToEnd(page);
+            const countdownEnded = await waitForCountdownToEnd(page);
+            if (countdownEnded) break;
+        }
         // Phase 3: Lightning fast booking
         console.log('⚡ Phase 3: Lightning booking sequence!');
         const bookingStart = Date.now();
