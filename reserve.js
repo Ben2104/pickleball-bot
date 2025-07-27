@@ -364,15 +364,8 @@ async function run() {
     console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
 
     const browser = await chromium.launch({
-        headless: true, // 
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-web-security',
-            '--disable-features=VizDisplayCompositor',
-            '--disable-dev-shm-usage',
-            '--disable-gpu'
-        ]
+        headless: true,
+        args: ['--no-sandbox', '--disable-dev-shm-usage']
     });
     const page = await browser.newPage();
 
