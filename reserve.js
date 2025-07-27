@@ -6,7 +6,6 @@ dotenv.config();
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
 const password = process.env.PASSWORD ? String(process.env.PASSWORD).trim() : '';
 
-
 // Add validation here
 if (!email || !password) {
     console.error('❌ Missing required environment variables:');
@@ -18,14 +17,12 @@ if (!email || !password) {
 
 console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}***`);
 
-
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"]; // Update as needed
+const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
 
-// Configuration for testing - set your desired booking time here
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7; // Convert to number
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0; // Convert to number
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function waitForCountdownToEnd(page) {
@@ -33,31 +30,26 @@ async function waitForCountdownToEnd(page) {
 
     while (true) {
         try {
-            // Get current time in PST
             const now = new Date();
             const pstTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
             const currentHour = pstTime.getHours();
             const currentMinute = pstTime.getMinutes();
             const currentSecond = pstTime.getSeconds();
 
-            // Create target time for today
             const targetTime = new Date(pstTime);
             targetTime.setHours(BOOKING_HOUR, BOOKING_MINUTE, 0, 0);
 
-            // If target time has passed today, set it for tomorrow
             if (pstTime >= targetTime) {
                 targetTime.setDate(targetTime.getDate() + 1);
             }
 
             const timeUntilTarget = targetTime - pstTime;
 
-            // Check if we've reached the exact target time (within 5 seconds)
             if (timeUntilTarget <= 5000 && timeUntilTarget >= 0) {
                 console.log(`✅ ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST reached! Starting booking...`);
                 return true;
             }
 
-            // Calculate display time
             const totalSeconds = Math.floor(timeUntilTarget / 1000);
             const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -65,12 +57,10 @@ async function waitForCountdownToEnd(page) {
 
             console.log(`⏳ Current PST: ${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')} - Time until ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')}: ${hours}h ${minutes}m ${seconds}s`);
 
-            // For testing: if booking time is more than 23 hours away, something is wrong
             if (timeUntilTarget > 23 * 60 * 60 * 1000) {
                 console.log('⚠️ Booking time is more than 23 hours away. Check your BOOKING_HOUR setting.');
             }
 
-            // Backup condition - check if time slot buttons are available
             try {
                 const timeSlotButton = await page.locator(`button:has-text("${TIME_SLOTS[0]}")`).isVisible({ timeout: 1000 });
                 if (timeSlotButton && timeUntilTarget <= 5000) {
@@ -81,7 +71,6 @@ async function waitForCountdownToEnd(page) {
                 // Ignore timeout errors when checking for buttons
             }
 
-            // Wait 1 second before checking again
             await delay(1000);
 
         } catch (error) {
@@ -92,77 +81,257 @@ async function waitForCountdownToEnd(page) {
 }
 
 async function login(page) {
-    await page.goto("https://app.playbypoint.com/users/sign_in", { waitUntil: 'networkidle' });
-    await page.waitForSelector('input[name="user[email]"]', { timeout: 15000 });
-    await page.fill('input[name="user[email]"]', email)
-    await page.fill('input[name="user[password]"]', password);
-    await Promise.all([
-        page.waitForNavigation({ waitUntil: 'networkidle' }),
-        page.click('input[type="submit"][name="commit"][value="Log in"]')
-    ]);
-    console.log('✅ Logged in successfully');
+    console.log('🔐 Attempting to login...');
+    
+    try {
+        // Set anti-detection headers and user agent
+        await page.setExtraHTTPHeaders({
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+        });
+        
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        
+        // Navigate to login page
+        console.log('🌐 Navigating to login page...');
+        await page.goto("https://app.playbypoint.com/users/sign_in", { 
+            waitUntil: 'domcontentloaded',
+            timeout: 60000 
+        });
+        
+        // Wait for page to stabilize
+        await page.waitForTimeout(3000 + Math.random() * 2000);
+        console.log('📄 Login page loaded');
+        
+        // Take screenshot for debugging
+        await page.screenshot({ path: 'login-page-debug.png' });
+        
+        // Check if we got blocked
+        const pageContent = await page.content();
+        if (pageContent.includes('403 Forbidden') || pageContent.includes('Access Denied')) {
+            throw new Error('403 Forbidden - Website is blocking automated access from GitHub Actions');
+        }
+        
+        // Multiple selector strategies for email field
+        const emailSelectors = [
+            'input[name="user[email]"]',
+            'input[type="email"]',
+            '#user_email',
+            'input[id="user_email"]',
+            'input[placeholder*="email" i]'
+        ];
+        
+        let emailFilled = false;
+        for (const selector of emailSelectors) {
+            try {
+                console.log(`📧 Trying email selector: ${selector}`);
+                await page.waitForSelector(selector, { timeout: 10000 });
+                
+                // Human-like interaction
+                await page.click(selector);
+                await page.waitForTimeout(100 + Math.random() * 200);
+                await page.fill(selector, email);
+                
+                console.log(`✅ Email filled using: ${selector}`);
+                emailFilled = true;
+                break;
+            } catch (e) {
+                console.log(`⚠️ Email selector ${selector} failed: ${e.message}`);
+                continue;
+            }
+        }
+        
+        if (!emailFilled) {
+            // Log page state for debugging
+            const title = await page.title();
+            const url = await page.url();
+            console.log(`📋 Page title: ${title}`);
+            console.log(`🔗 Current URL: ${url}`);
+            console.log(`📝 Page content preview: ${pageContent.substring(0, 500)}`);
+            throw new Error('❌ Could not find email input field with any selector');
+        }
+        
+        // Multiple selector strategies for password field
+        const passwordSelectors = [
+            'input[name="user[password]"]',
+            'input[type="password"]',
+            '#user_password',
+            'input[id="user_password"]'
+        ];
+        
+        let passwordFilled = false;
+        for (const selector of passwordSelectors) {
+            try {
+                console.log(`🔒 Trying password selector: ${selector}`);
+                await page.waitForSelector(selector, { timeout: 5000 });
+                
+                // Human-like interaction
+                await page.click(selector);
+                await page.waitForTimeout(100 + Math.random() * 200);
+                await page.fill(selector, password);
+                
+                console.log(`✅ Password filled using: ${selector}`);
+                passwordFilled = true;
+                break;
+            } catch (e) {
+                console.log(`⚠️ Password selector ${selector} failed: ${e.message}`);
+                continue;
+            }
+        }
+        
+        if (!passwordFilled) {
+            throw new Error('❌ Could not find password input field with any selector');
+        }
+        
+        // Human-like delay before clicking submit
+        await page.waitForTimeout(500 + Math.random() * 1000);
+        
+        // Multiple selector strategies for login button
+        const loginSelectors = [
+            'input[type="submit"][name="commit"][value="Log in"]',
+            'button[type="submit"]',
+            'input[type="submit"]',
+            'button:has-text("Log in")',
+            'button:has-text("Sign in")',
+            '*[type="submit"]'
+        ];
+        
+        let loginSuccess = false;
+        for (const selector of loginSelectors) {
+            try {
+                console.log(`🔘 Trying login selector: ${selector}`);
+                await page.waitForSelector(selector, { timeout: 3000 });
+                
+                await Promise.all([
+                    page.waitForNavigation({ 
+                        waitUntil: 'domcontentloaded', 
+                        timeout: 45000 
+                    }),
+                    page.click(selector)
+                ]);
+                
+                console.log(`✅ Login successful using: ${selector}`);
+                loginSuccess = true;
+                break;
+            } catch (e) {
+                console.log(`⚠️ Login selector ${selector} failed: ${e.message}`);
+                continue;
+            }
+        }
+        
+        if (!loginSuccess) {
+            throw new Error('❌ Could not find or click login button');
+        }
+        
+        console.log('✅ Logged in successfully');
+        
+    } catch (error) {
+        console.error('❌ Login failed:', error.message);
+        
+        // Take comprehensive debug screenshots
+        try {
+            await page.screenshot({ path: 'login-error-full.png', fullPage: true });
+            const content = await page.content();
+            console.log('📝 Page content preview:', content.substring(0, 1000));
+        } catch (screenshotErr) {
+            console.error('❌ Could not take debug screenshot:', screenshotErr.message);
+        }
+        
+        throw error;
+    }
 }
 
 async function goToBookingPage(page) {
-    const selector = `a.ui.button.large.fluid.white[href="${BOOKING_URL}"]`;
-    await page.waitForSelector(selector);
-    await Promise.all([
-        page.waitForNavigation({ waitUntil: 'networkidle' }),
-        page.click(selector)
-    ]);
-    console.log('✅ Navigated to booking page');
+    console.log('🏟️ Navigating to booking page...');
+    
+    try {
+        const selector = `a.ui.button.large.fluid.white[href="${BOOKING_URL}"]`;
+        await page.waitForSelector(selector, { timeout: 15000 });
+        
+        await Promise.all([
+            page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 30000 }),
+            page.click(selector)
+        ]);
+        
+        console.log('✅ Navigated to booking page');
+    } catch (error) {
+        console.error('❌ Failed to navigate to booking page:', error.message);
+        await page.screenshot({ path: 'booking-page-error.png' });
+        throw error;
+    }
 }
 
 function getTargetDateInfo() {
     const today = new Date();
     const targetDate = new Date(today);
-    targetDate.setDate(today.getDate() + 7); // 7 days ahead instead of 1
+    targetDate.setDate(today.getDate() + 7);
 
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const dayName = dayNames[targetDate.getDay()];
     const dayNumber = String(targetDate.getDate()).padStart(2, '0');
 
+    console.log(`📅 Target date: ${dayName} ${dayNumber} (7 days from today)`);
     return { dayName, dayNumber };
 }
 
 async function selectTargetDate(page) {
-    const { dayName, dayNumber } = getTargetDateInfo(); // Updated function name
-    const dayButtons = await page.$$('.day-container button');
+    console.log('📅 Selecting target date...');
+    
+    try {
+        const { dayName, dayNumber } = getTargetDateInfo();
+        const dayButtons = await page.$$('.day-container button');
 
+        for (const btn of dayButtons) {
+            const nameEl = await btn.$('.day_name');
+            const numberEl = await btn.$('.day_number');
+            if (nameEl && numberEl) {
+                const name = (await nameEl.textContent()).trim();
+                const number = (await numberEl.textContent()).trim();
 
-    for (const btn of dayButtons) {
-        const nameEl = await btn.$('.day_name');
-        const numberEl = await btn.$('.day_number');
-        if (nameEl && numberEl) {
-            const name = (await nameEl.textContent()).trim();
-            const number = (await numberEl.textContent()).trim();
+                console.log(`Found date button: ${name} ${number}`);
 
-            console.log(`Found date button: ${name} ${number}`);
-
-            if (name === dayName && number === dayNumber) {
-                await btn.click();
-                console.log(`✅ Selected date: ${dayName} ${dayNumber}`);
-                return;
+                if (name === dayName && number === dayNumber) {
+                    await btn.click();
+                    console.log(`✅ Selected date: ${dayName} ${dayNumber}`);
+                    return;
+                }
             }
         }
+        throw new Error(`❌ Could not find date: ${dayName} ${dayNumber}`);
+    } catch (error) {
+        console.error('❌ Date selection failed:', error.message);
+        await page.screenshot({ path: 'date-selection-error.png' });
+        throw error;
     }
-    throw new Error(`❌ Could not find date: ${dayName} ${dayNumber}`);
 }
 
 async function selectCourtType(page) {
-    const courtButton = await page.locator(`button:has-text("${COURT_TYPE}")`).first();
-    if (await courtButton.isVisible() && await courtButton.isEnabled()) {
-        await courtButton.click();
-        console.log(`✅ Selected court type: ${COURT_TYPE}`);
-    } else {
-        throw new Error(`❌ Court type button not available: ${COURT_TYPE}`);
+    console.log('🎾 Selecting court type...');
+    
+    try {
+        const courtButton = await page.locator(`button:has-text("${COURT_TYPE}")`).first();
+        await courtButton.waitFor({ timeout: 10000 });
+        
+        if (await courtButton.isVisible() && await courtButton.isEnabled()) {
+            await courtButton.click();
+            console.log(`✅ Selected court type: ${COURT_TYPE}`);
+        } else {
+            throw new Error(`❌ Court type button not available: ${COURT_TYPE}`);
+        }
+    } catch (error) {
+        console.error('❌ Court type selection failed:', error.message);
+        await page.screenshot({ path: 'court-type-error.png' });
+        throw error;
     }
 }
 
 async function selectTimeSlots(page) {
     console.log('🕒 Starting time slot selection...');
 
-    // Wait a bit longer for time slots to load after countdown ends
     await page.waitForTimeout(2000);
 
     for (const time of TIME_SLOTS) {
@@ -170,7 +339,6 @@ async function selectTimeSlots(page) {
         const btn = page.locator(`button:has-text("${time}")`).first();
 
         try {
-            // Wait longer for the button to appear after countdown
             await btn.waitFor({ timeout: 3000 });
             const isVisible = await btn.isVisible();
             const isEnabled = await btn.isEnabled();
@@ -180,8 +348,6 @@ async function selectTimeSlots(page) {
             if (isVisible && isEnabled) {
                 await btn.click({ timeout: 1000 });
                 console.log(`✅ Selected time slot: ${time}`);
-
-                // Small delay between clicks
                 await page.waitForTimeout(100);
             } else {
                 console.log(`❌ Not clickable: ${time}`);
@@ -195,12 +361,22 @@ async function selectTimeSlots(page) {
 }
 
 async function clickNext(page) {
-    const next = page.locator('button:has-text("Next")').first();
-    if (await next.isVisible() && await next.isEnabled()) {
-        await next.click();
-        console.log('✅ Clicked NEXT');
-    } else {
-        throw new Error('❌ NEXT button not found');
+    console.log('⏭️ Clicking Next...');
+    
+    try {
+        const next = page.locator('button:has-text("Next")').first();
+        await next.waitFor({ timeout: 10000 });
+        
+        if (await next.isVisible() && await next.isEnabled()) {
+            await next.click();
+            console.log('✅ Clicked NEXT');
+        } else {
+            throw new Error('❌ NEXT button not found');
+        }
+    } catch (error) {
+        console.error('❌ Next button click failed:', error.message);
+        await page.screenshot({ path: 'next-button-error.png' });
+        throw error;
     }
 }
 
@@ -208,7 +384,6 @@ async function clickAddButton(page) {
     console.log('🔘 Looking for ADD button...');
 
     try {
-        // Multiple selectors to find the specific ADD button
         const selectors = [
             'button.ui.button.mini.primary.basic.flex_align_items_center:has-text("Add")',
             'button.ui.button.mini.primary:has-text("Add")',
@@ -224,10 +399,7 @@ async function clickAddButton(page) {
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
                     await addBtn.click();
                     console.log(`✅ Successfully clicked ADD button using: ${selector}`);
-
-                    // Small wait for the action to complete
                     await page.waitForTimeout(230);
-
                     return true;
                 }
             } catch (selectorError) {
@@ -249,7 +421,6 @@ async function clickCheckout(page) {
     console.log('🛒 Looking for Checkout button...');
 
     try {
-        // Multiple selector strategies
         const selectors = [
             'td:has(h2.mb0.stepper_title:text("Checkout"))',
             'h2.mb0.stepper_title:text("Checkout")',
@@ -265,10 +436,7 @@ async function clickCheckout(page) {
                 if (await checkoutBtn.isVisible()) {
                     await checkoutBtn.click();
                     console.log(`✅ Successfully clicked Checkout using: ${selector}`);
-
-                    // Small wait for the action to complete
                     await page.waitForTimeout(500);
-
                     return true;
                 }
             } catch (selectorError) {
@@ -286,22 +454,18 @@ async function clickCheckout(page) {
     }
 }
 
-// Updated addUsers function using the new clickAddButton function
 async function addUsers(page) {
     console.log('👥 Adding users...');
 
     try {
-        // Step 1: Look for "ADD USERS" button
         const addUsersBtn = page.locator('button:has-text("ADD USERS")').first();
+        await addUsersBtn.waitFor({ timeout: 10000 });
 
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
             await addUsersBtn.click();
             console.log('✅ Clicked ADD USERS button');
-
-            // Wait for modal to open
             await page.waitForTimeout(200);
 
-            // Step 2: Use the dedicated clickAddButton function
             const addButtonClicked = await clickAddButton(page);
 
             if (addButtonClicked) {
@@ -319,6 +483,7 @@ async function addUsers(page) {
 
     } catch (error) {
         console.error('❌ Error adding users:', error.message);
+        await page.screenshot({ path: 'add-users-error.png' });
         return false;
     }
 }
@@ -327,22 +492,17 @@ async function clickBook(page) {
     console.log('📋 Looking for Book button...');
 
     try {
-        // Wait for the exact button structure
         const exactSelector = 'button.ui.button.primary.fluid.large';
         await page.waitForSelector(exactSelector, { timeout: 5000 });
 
         const bookBtn = page.locator(exactSelector).first();
 
         if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
-            // Verify it contains "Book" text
             const buttonText = await bookBtn.textContent();
             if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
                 await bookBtn.click();
                 console.log('🎉 Successfully clicked BOOK button - Booking Complete!');
-
-                // Wait for booking confirmation
                 await page.waitForTimeout(1000);
-
                 return true;
             } else {
                 console.error('❌ Button found but does not contain "Book" text');
@@ -355,6 +515,7 @@ async function clickBook(page) {
 
     } catch (error) {
         console.error('❌ Error clicking Book button:', error.message);
+        await page.screenshot({ path: 'book-button-error.png' });
         return false;
     }
 }
@@ -365,24 +526,42 @@ async function run() {
 
     const browser = await chromium.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-dev-shm-usage']
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-blink-features=AutomationControlled',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--no-first-run',
+            '--no-default-browser-check'
+        ]
     });
+    
     const page = await browser.newPage();
+    
+    // Hide automation signals
+    await page.addInitScript(() => {
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined,
+        });
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+    });
 
     try {
-        // Phase 1: Setup (before countdown)
         console.log('🚀 Phase 1: Setting up booking...');
         await login(page);
         await goToBookingPage(page);
-        await page.waitForSelector('.day-container button', { timeout: 10000 });
+        await page.waitForSelector('.day-container button', { timeout: 15000 });
         await selectTargetDate(page);
         await selectCourtType(page);
 
-        // Phase 2: Wait for countdown to end
         console.log(`⏰ Phase 2: Waiting for ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
         await waitForCountdownToEnd(page);
 
-        // Phase 3: Lightning fast booking
         console.log('⚡ Phase 3: Lightning booking sequence!');
         const bookingStart = Date.now();
 
@@ -398,7 +577,7 @@ async function run() {
 
     } catch (err) {
         console.error('❌ Booking failed:', err.message);
-        await page.screenshot({ path: 'error.png' });
+        await page.screenshot({ path: 'final-error.png', fullPage: true });
         throw err;
     } finally {
         await delay(5000);
@@ -407,4 +586,4 @@ async function run() {
     }
 }
 
-run();
+run().catch(console.error);
