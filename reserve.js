@@ -363,7 +363,7 @@ async function run() {
     console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
     
     const browser = await chromium.launch({
-        headless: true, // 
+        headless: false, // 
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
