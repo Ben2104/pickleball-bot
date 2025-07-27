@@ -2,7 +2,7 @@ name: Daily Court Reservation
 
 on:
   schedule:
-    - cron: '45 4 * * *'  # Runs at 9:45 PM PDT (04:45 UTC next day)
+    - cron: '55 13 * * *'  # Runs at 6:55 AM PDT (13:55 UTC)
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
