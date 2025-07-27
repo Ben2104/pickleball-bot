@@ -39,37 +39,37 @@ async function waitForCountdownToEnd(page) {
             const currentHour = pstTime.getHours();
             const currentMinute = pstTime.getMinutes();
             const currentSecond = pstTime.getSeconds();
-            
+
             // Create target time for today
             const targetTime = new Date(pstTime);
             targetTime.setHours(BOOKING_HOUR, BOOKING_MINUTE, 0, 0);
-            
+
             // If target time has passed today, set it for tomorrow
             if (pstTime >= targetTime) {
                 targetTime.setDate(targetTime.getDate() + 1);
             }
-            
+
             const timeUntilTarget = targetTime - pstTime;
-            
+
             // Check if we've reached the exact target time (within 5 seconds)
             if (timeUntilTarget <= 5000 && timeUntilTarget >= 0) {
                 console.log(`✅ ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST reached! Starting booking...`);
                 return true;
             }
-            
+
             // Calculate display time
             const totalSeconds = Math.floor(timeUntilTarget / 1000);
             const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = totalSeconds % 60;
-            
+
             console.log(`⏳ Current PST: ${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')} - Time until ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')}: ${hours}h ${minutes}m ${seconds}s`);
-            
+
             // For testing: if booking time is more than 23 hours away, something is wrong
             if (timeUntilTarget > 23 * 60 * 60 * 1000) {
                 console.log('⚠️ Booking time is more than 23 hours away. Check your BOOKING_HOUR setting.');
             }
-            
+
             // Backup condition - check if time slot buttons are available
             try {
                 const timeSlotButton = await page.locator(`button:has-text("${TIME_SLOTS[0]}")`).isVisible({ timeout: 1000 });
@@ -93,7 +93,8 @@ async function waitForCountdownToEnd(page) {
 
 async function login(page) {
     await page.goto("https://app.playbypoint.com/users/sign_in", { waitUntil: 'networkidle' });
-    await page.fill('input[name="user[email]"]', email);
+    await page.waitForSelector('input[name="user[email]"]', { timeout: 15000 });
+    await page.fill('input[name="user[email]"]', email)
     await page.fill('input[name="user[password]"]', password);
     await Promise.all([
         page.waitForNavigation({ waitUntil: 'networkidle' }),
@@ -361,11 +362,11 @@ async function clickBook(page) {
 async function run() {
     console.time('⏱️ Total time');
     console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
-    
+
     const browser = await chromium.launch({
         headless: true, // 
         args: [
-            '--no-sandbox', 
+            '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-web-security',
             '--disable-features=VizDisplayCompositor',
@@ -387,7 +388,7 @@ async function run() {
         // Phase 2: Wait for countdown to end
         console.log(`⏰ Phase 2: Waiting for ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
         await waitForCountdownToEnd(page);
-        
+
         // Phase 3: Lightning fast booking
         console.log('⚡ Phase 3: Lightning booking sequence!');
         const bookingStart = Date.now();
