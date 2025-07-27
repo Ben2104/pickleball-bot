@@ -25,6 +25,16 @@ const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
 const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+// Stealth configuration
+const STEALTH_CONFIG = {
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+    viewport: { width: 1440, height: 900 },
+    locale: 'en-US',
+    timezone: 'America/Los_Angeles',
+    permissions: ['geolocation'],
+    geolocation: { latitude: 33.8703, longitude: -118.0895 }, // Cerritos, CA coordinates
+};
+
 async function waitForCountdownToEnd(page) {
     console.log(`⏰ Waiting for countdown to reach ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
 
@@ -84,26 +94,32 @@ async function login(page) {
     console.log('🔐 Attempting to login...');
     
     try {
-        // Set anti-detection headers (remove setUserAgent call)
+        // Human-like navigation with realistic headers
         await page.setExtraHTTPHeaders({
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
             'DNT': '1',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Cache-Control': 'max-age=0'
         });
         
-        // Navigate to login page
         console.log('🌐 Navigating to login page...');
         await page.goto("https://app.playbypoint.com/users/sign_in", { 
             waitUntil: 'domcontentloaded',
             timeout: 60000 
         });
         
-        // Wait for page to stabilize
-        await page.waitForTimeout(3000 + Math.random() * 2000);
+        // Human-like page interaction - scroll a bit to mimic reading
+        await page.waitForTimeout(1000 + Math.random() * 2000);
+        await page.mouse.move(Math.random() * 100 + 100, Math.random() * 100 + 100);
+        await page.waitForTimeout(500 + Math.random() * 1000);
+        
         console.log('📄 Login page loaded');
         
         // Take screenshot for debugging
@@ -111,8 +127,8 @@ async function login(page) {
         
         // Check if we got blocked
         const pageContent = await page.content();
-        if (pageContent.includes('403 Forbidden') || pageContent.includes('Access Denied')) {
-            throw new Error('403 Forbidden - Website is blocking automated access from GitHub Actions');
+        if (pageContent.includes('403 Forbidden') || pageContent.includes('Access Denied') || pageContent.includes('<html><head></head><body></body></html>')) {
+            throw new Error('403 Forbidden - Website is blocking automated access');
         }
         
         // Multiple selector strategies for email field
@@ -130,10 +146,12 @@ async function login(page) {
                 console.log(`📧 Trying email selector: ${selector}`);
                 await page.waitForSelector(selector, { timeout: 10000 });
                 
-                // Human-like interaction
+                // Human-like interaction with realistic typing
                 await page.click(selector);
-                await page.waitForTimeout(100 + Math.random() * 200);
-                await page.fill(selector, email);
+                await page.waitForTimeout(200 + Math.random() * 300);
+                
+                // Type slowly like a human
+                await page.type(selector, email, { delay: 50 + Math.random() * 100 });
                 
                 console.log(`✅ Email filled using: ${selector}`);
                 emailFilled = true;
@@ -145,7 +163,6 @@ async function login(page) {
         }
         
         if (!emailFilled) {
-            // Log page state for debugging
             const title = await page.title();
             const url = await page.url();
             console.log(`📋 Page title: ${title}`);
@@ -153,6 +170,9 @@ async function login(page) {
             console.log(`📝 Page content preview: ${pageContent.substring(0, 500)}`);
             throw new Error('❌ Could not find email input field with any selector');
         }
+        
+        // Human-like pause between fields
+        await page.waitForTimeout(300 + Math.random() * 700);
         
         // Multiple selector strategies for password field
         const passwordSelectors = [
@@ -170,8 +190,10 @@ async function login(page) {
                 
                 // Human-like interaction
                 await page.click(selector);
-                await page.waitForTimeout(100 + Math.random() * 200);
-                await page.fill(selector, password);
+                await page.waitForTimeout(200 + Math.random() * 300);
+                
+                // Type slowly like a human
+                await page.type(selector, password, { delay: 50 + Math.random() * 100 });
                 
                 console.log(`✅ Password filled using: ${selector}`);
                 passwordFilled = true;
@@ -186,8 +208,8 @@ async function login(page) {
             throw new Error('❌ Could not find password input field with any selector');
         }
         
-        // Human-like delay before clicking submit
-        await page.waitForTimeout(500 + Math.random() * 1000);
+        // Human-like delay before clicking submit (people often pause to check their input)
+        await page.waitForTimeout(800 + Math.random() * 1200);
         
         // Multiple selector strategies for login button
         const loginSelectors = [
@@ -204,6 +226,17 @@ async function login(page) {
             try {
                 console.log(`🔘 Trying login selector: ${selector}`);
                 await page.waitForSelector(selector, { timeout: 3000 });
+                
+                // Human-like click with slight mouse movement
+                const button = page.locator(selector).first();
+                const box = await button.boundingBox();
+                if (box) {
+                    await page.mouse.move(
+                        box.x + box.width / 2 + (Math.random() - 0.5) * 10,
+                        box.y + box.height / 2 + (Math.random() - 0.5) * 10
+                    );
+                    await page.waitForTimeout(100 + Math.random() * 200);
+                }
                 
                 await Promise.all([
                     page.waitForNavigation({ 
@@ -231,7 +264,6 @@ async function login(page) {
     } catch (error) {
         console.error('❌ Login failed:', error.message);
         
-        // Take comprehensive debug screenshots
         try {
             await page.screenshot({ path: 'login-error-full.png', fullPage: true });
             const content = await page.content();
@@ -250,6 +282,17 @@ async function goToBookingPage(page) {
     try {
         const selector = `a.ui.button.large.fluid.white[href="${BOOKING_URL}"]`;
         await page.waitForSelector(selector, { timeout: 15000 });
+        
+        // Human-like click with mouse movement
+        const link = page.locator(selector);
+        const box = await link.boundingBox();
+        if (box) {
+            await page.mouse.move(
+                box.x + box.width / 2 + (Math.random() - 0.5) * 20,
+                box.y + box.height / 2 + (Math.random() - 0.5) * 10
+            );
+            await page.waitForTimeout(200 + Math.random() * 300);
+        }
         
         await Promise.all([
             page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 30000 }),
@@ -294,6 +337,8 @@ async function selectTargetDate(page) {
                 console.log(`Found date button: ${name} ${number}`);
 
                 if (name === dayName && number === dayNumber) {
+                    // Human-like click with delay
+                    await page.waitForTimeout(300 + Math.random() * 500);
                     await btn.click();
                     console.log(`✅ Selected date: ${dayName} ${dayNumber}`);
                     return;
@@ -316,6 +361,8 @@ async function selectCourtType(page) {
         await courtButton.waitFor({ timeout: 10000 });
         
         if (await courtButton.isVisible() && await courtButton.isEnabled()) {
+            // Human-like delay and click
+            await page.waitForTimeout(400 + Math.random() * 600);
             await courtButton.click();
             console.log(`✅ Selected court type: ${COURT_TYPE}`);
         } else {
@@ -345,9 +392,11 @@ async function selectTimeSlots(page) {
             console.log(`   Button status - Visible: ${isVisible}, Enabled: ${isEnabled}`);
 
             if (isVisible && isEnabled) {
+                // Human-like delay between clicks
+                await page.waitForTimeout(100 + Math.random() * 200);
                 await btn.click({ timeout: 1000 });
                 console.log(`✅ Selected time slot: ${time}`);
-                await page.waitForTimeout(100);
+                await page.waitForTimeout(150 + Math.random() * 250);
             } else {
                 console.log(`❌ Not clickable: ${time}`);
             }
@@ -367,6 +416,8 @@ async function clickNext(page) {
         await next.waitFor({ timeout: 10000 });
         
         if (await next.isVisible() && await next.isEnabled()) {
+            // Human-like delay before clicking
+            await page.waitForTimeout(300 + Math.random() * 500);
             await next.click();
             console.log('✅ Clicked NEXT');
         } else {
@@ -396,6 +447,7 @@ async function clickAddButton(page) {
                 const addBtn = page.locator(selector).first();
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
+                    await page.waitForTimeout(200 + Math.random() * 300);
                     await addBtn.click();
                     console.log(`✅ Successfully clicked ADD button using: ${selector}`);
                     await page.waitForTimeout(230);
@@ -433,6 +485,7 @@ async function clickCheckout(page) {
                 const checkoutBtn = page.locator(selector).first();
 
                 if (await checkoutBtn.isVisible()) {
+                    await page.waitForTimeout(300 + Math.random() * 400);
                     await checkoutBtn.click();
                     console.log(`✅ Successfully clicked Checkout using: ${selector}`);
                     await page.waitForTimeout(500);
@@ -461,6 +514,7 @@ async function addUsers(page) {
         await addUsersBtn.waitFor({ timeout: 10000 });
 
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
+            await page.waitForTimeout(400 + Math.random() * 600);
             await addUsersBtn.click();
             console.log('✅ Clicked ADD USERS button');
             await page.waitForTimeout(200);
@@ -499,6 +553,8 @@ async function clickBook(page) {
         if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
             const buttonText = await bookBtn.textContent();
             if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
+                // Human-like pause before final action
+                await page.waitForTimeout(500 + Math.random() * 800);
                 await bookBtn.click();
                 console.log('🎉 Successfully clicked BOOK button - Booking Complete!');
                 await page.waitForTimeout(1000);
@@ -523,6 +579,7 @@ async function run() {
     console.time('⏱️ Total time');
     console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
 
+    // Advanced stealth browser configuration
     const browser = await chromium.launch({
         headless: true,
         args: [
@@ -535,26 +592,121 @@ async function run() {
             '--disable-gpu',
             '--no-first-run',
             '--no-default-browser-check',
-            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
+            '--disable-field-trial-config',
+            '--disable-hang-monitor',
+            '--disable-ipc-flooding-protection',
+            '--disable-prompt-on-repost',
+            '--disable-sync',
+            '--force-color-profile=srgb',
+            '--metrics-recording-only',
+            '--no-crash-upload',
+            '--no-default-browser-check',
+            '--no-pings',
+            '--password-store=basic',
+            '--use-mock-keychain',
+            '--hide-scrollbars',
+            '--mute-audio',
+            `--user-agent=${STEALTH_CONFIG.userAgent}`
         ]
     });
     
-    const page = await browser.newPage();
+    // Create stealth context with realistic settings
+    const context = await browser.newContext({
+        userAgent: STEALTH_CONFIG.userAgent,
+        viewport: STEALTH_CONFIG.viewport,
+        locale: STEALTH_CONFIG.locale,
+        timezoneId: STEALTH_CONFIG.timezone,
+        permissions: STEALTH_CONFIG.permissions,
+        geolocation: STEALTH_CONFIG.geolocation,
+        colorScheme: 'light',
+        extraHTTPHeaders: {
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+        }
+    });
     
-    // Hide automation signals
+    const page = await context.newPage();
+    
+    // Advanced stealth JavaScript injection
     await page.addInitScript(() => {
+        // Remove webdriver property
         Object.defineProperty(navigator, 'webdriver', {
             get: () => undefined,
         });
-        // Remove Chrome automation properties
+        
+        // Remove automation indicators
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Object;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Proxy;
         
-        // Override navigator.userAgent
+        // Override navigator properties
         Object.defineProperty(navigator, 'userAgent', {
-            get: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            get: () => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
         });
+        
+        Object.defineProperty(navigator, 'platform', {
+            get: () => 'MacIntel',
+        });
+        
+        Object.defineProperty(navigator, 'languages', {
+            get: () => ['en-US', 'en'],
+        });
+        
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => [
+                {
+                    0: {
+                        type: 'application/x-google-chrome-pdf',
+                        suffixes: 'pdf',
+                        description: 'Portable Document Format',
+                        enabledPlugin: null
+                    },
+                    description: 'Portable Document Format',
+                    filename: 'internal-pdf-viewer',
+                    length: 1,
+                    name: 'Chrome PDF Plugin'
+                }
+            ],
+        });
+        
+        // Mock realistic screen properties
+        Object.defineProperty(screen, 'width', {
+            get: () => 1440,
+        });
+        Object.defineProperty(screen, 'height', {
+            get: () => 900,
+        });
+        Object.defineProperty(screen, 'availWidth', {
+            get: () => 1440,
+        });
+        Object.defineProperty(screen, 'availHeight', {
+            get: () => 877,
+        });
+        
+        // Override permissions
+        const originalQuery = window.navigator.permissions.query;
+        window.navigator.permissions.query = (parameters) => (
+            parameters.name === 'notifications' ?
+                Promise.resolve({ state: Notification.permission }) :
+                originalQuery(parameters)
+        );
+        
+        // Add realistic WebGL properties
+        const getParameter = WebGLRenderingContext.getParameter;
+        WebGLRenderingContext.prototype.getParameter = function(parameter) {
+            if (parameter === 37445) {
+                return 'Intel Inc.';
+            }
+            if (parameter === 37446) {
+                return 'Intel Iris Pro OpenGL Engine';
+            }
+            return getParameter(parameter);
+        };
     });
 
     try {
@@ -591,6 +743,5 @@ async function run() {
         console.timeEnd('⏱️ Total time');
     }
 }
-
 
 run().catch(console.error);
