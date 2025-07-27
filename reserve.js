@@ -8,10 +8,10 @@ const password = process.env.PASSWORD;
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"]; // Update as needed
+const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"]; // Update as needed
 
 // Configuration for testing - set your desired booking time here
-const BOOKING_HOUR = process.env.BOOKING_HOUR || 21; // Default to 21 (9 PM)
+const BOOKING_HOUR = process.env.BOOKING_HOUR || 7; // Default to 21 (9 PM)
 const BOOKING_MINUTE = process.env.BOOKING_MINUTE || 0; // Default to exact hour
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -54,7 +54,7 @@ async function waitForCountdownToEnd(page) {
 
             console.log(`⏳ Current PST: ${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')} - Time until ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')}: ${hoursUntil}h ${minutesUntil}m ${secondsUntil}s`);
 
-            
+
 
             // Wait 1 second before checking again
             await delay(1000);
@@ -354,7 +354,6 @@ async function run() {
         // Phase 2: Wait for countdown to end
         console.log('⏰ Phase 2: Waiting for 7:00 AM...');
         while (true) {
-            await waitForCountdownToEnd(page);
             const countdownEnded = await waitForCountdownToEnd(page);
             if (countdownEnded) break;
         }
