@@ -6,6 +6,18 @@ dotenv.config();
 const email = process.env.EMAIL;
 const password = process.env.PASSWORD;
 
+// Add validation here
+if (!email || !password) {
+    console.error('❌ Missing required environment variables:');
+    if (!email) console.error('  - EMAIL is not set');
+    if (!password) console.error('  - PASSWORD is not set');
+    console.error('Please create a .env file with EMAIL and PASSWORD or set them as environment variables');
+    process.exit(1);
+}
+
+console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}***`);
+
+
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
 const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"]; // Update as needed

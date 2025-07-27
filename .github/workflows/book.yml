@@ -1,31 +1,27 @@
-name: Daily Court Reservation
+name: Pickleball Court Booking Bot
 
 on:
   schedule:
-    - cron: '55 13 * * *'  # Runs at 6:55 AM PDT (13:55 UTC)
-  workflow_dispatch:  # Allow manual trigger
+    - cron: '55 14 * * *'
+  workflow_dispatch:
 
 jobs:
-  reserve:
+  book-court:
     runs-on: ubuntu-latest
-    env:
-      EMAIL: ${{ secrets.EMAIL }}
-      PASSWORD: ${{ secrets.PASSWORD }}
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Playwright install
-        run: npx playwright install --with-deps
-
-      - name: Run reservation bot
-        run: node reserve.js
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - run: npm install playwright dotenv
+    - run: npx playwright install chromium --with-deps
+        
+    - name: Run bot
+      env:
+        EMAIL: ${{ secrets.EMAIL }}
+        PASSWORD: ${{ secrets.PASSWORD }}
+        BOOKING_HOUR: 7
+        BOOKING_MINUTE: 0
+      run: node reserve.js
