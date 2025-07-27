@@ -17,44 +17,56 @@ const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function waitForCountdownToEnd(page) {
     console.log(`⏰ Waiting for countdown to reach ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
-    
+
     while (true) {
         try {
-            // Get current time in PST (UTC-8)
+            // Get current time in PST
             const now = new Date();
             const pstTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
             const currentHour = pstTime.getHours();
             const currentMinute = pstTime.getMinutes();
             const currentSecond = pstTime.getSeconds();
             
-            // Check if we've reached the target booking time
-            if (currentHour > BOOKING_HOUR || (currentHour === BOOKING_HOUR && currentMinute >= BOOKING_MINUTE)) {
+            // Create target time for today
+            const targetTime = new Date(pstTime);
+            targetTime.setHours(BOOKING_HOUR, BOOKING_MINUTE, 0, 0);
+            
+            // If target time has passed today, set it for tomorrow
+            if (pstTime >= targetTime) {
+                targetTime.setDate(targetTime.getDate() + 1);
+            }
+            
+            const timeUntilTarget = targetTime - pstTime;
+            
+            // Check if we've reached the exact target time (within 5 seconds)
+            if (timeUntilTarget <= 5000 && timeUntilTarget >= 0) {
                 console.log(`✅ ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST reached! Starting booking...`);
                 return true;
             }
-
-            // Calculate time remaining until booking time
-            let hoursUntil = BOOKING_HOUR - currentHour;
-            let minutesUntil = BOOKING_MINUTE - currentMinute;
-            let secondsUntil = 0 - currentSecond;
-
-            if (secondsUntil < 0) {
-                secondsUntil += 60;
-                minutesUntil--;
+            
+            // Calculate display time
+            const totalSeconds = Math.floor(timeUntilTarget / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            console.log(`⏳ Current PST: ${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')} - Time until ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')}: ${hours}h ${minutes}m ${seconds}s`);
+            
+            // For testing: if booking time is more than 23 hours away, something is wrong
+            if (timeUntilTarget > 23 * 60 * 60 * 1000) {
+                console.log('⚠️ Booking time is more than 23 hours away. Check your BOOKING_HOUR setting.');
             }
-            if (minutesUntil < 0) {
-                minutesUntil += 60;
-                hoursUntil--;
+            
+            // Backup condition - check if time slot buttons are available
+            try {
+                const timeSlotButton = await page.locator(`button:has-text("${TIME_SLOTS[0]}")`).isVisible({ timeout: 1000 });
+                if (timeSlotButton && timeUntilTarget <= 5000) {
+                    console.log('✅ Time slot buttons are now available! Starting booking...');
+                    return true;
+                }
+            } catch (e) {
+                // Ignore timeout errors when checking for buttons
             }
-
-            // Handle negative hours (booking time is tomorrow)
-            if (hoursUntil < 0) {
-                hoursUntil += 24;
-            }
-
-            console.log(`⏳ Current PST: ${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')} - Time until ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')}: ${hoursUntil}h ${minutesUntil}m ${secondsUntil}s`);
-
-
 
             // Wait 1 second before checking again
             await delay(1000);
@@ -352,11 +364,9 @@ async function run() {
         await selectCourtType(page);
 
         // Phase 2: Wait for countdown to end
-        console.log('⏰ Phase 2: Waiting for 7:00 AM...');
-        while (true) {
-            const countdownEnded = await waitForCountdownToEnd(page);
-            if (countdownEnded) break;
-        }
+        console.log(`⏰ Phase 2: Waiting for ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
+        // FIX: Remove the while loop - just call once
+        await waitForCountdownToEnd(page);
         // Phase 3: Lightning fast booking
         console.log('⚡ Phase 3: Lightning booking sequence!');
         const bookingStart = Date.now();
