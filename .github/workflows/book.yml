@@ -3,7 +3,7 @@ name: Automatic Pickleball Reservations on PlayByPoint
 on:
   schedule:
     # Runs at 6:55 AM PST (14:55 UTC) every day to catch 7 AM bookings
-    - cron: '55 14 * * *'
+    - cron: '55 13 * * *'
   workflow_dispatch: # Allows manual trigger
 
 jobs:
