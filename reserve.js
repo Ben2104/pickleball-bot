@@ -11,8 +11,8 @@ const COURT_TYPE = 'Pickleball';
 const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"]; // Update as needed
 
 // Configuration for testing - set your desired booking time here
-const BOOKING_HOUR = process.env.BOOKING_HOUR || 7; // Default to 21 (9 PM)
-const BOOKING_MINUTE = process.env.BOOKING_MINUTE || 0; // Default to exact hour
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7; // Convert to number
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0; // Convert to number
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function waitForCountdownToEnd(page) {
@@ -347,10 +347,18 @@ async function clickBook(page) {
 
 async function run() {
     console.time('⏱️ Total time');
+    console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
+    
     const browser = await chromium.launch({
-        headless: process.env.NODE_ENV === 'production', // headless in production (GitHub Actions)
-        slowMo: process.env.NODE_ENV === 'production' ? 0 : 500, // no slowMo in production
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Required for GitHub Actions
+        headless: true, // Always headless for GitHub Actions
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-dev-shm-usage',
+            '--disable-gpu'
+        ]
     });
     const page = await browser.newPage();
 
@@ -365,8 +373,8 @@ async function run() {
 
         // Phase 2: Wait for countdown to end
         console.log(`⏰ Phase 2: Waiting for ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
-        // FIX: Remove the while loop - just call once
         await waitForCountdownToEnd(page);
+        
         // Phase 3: Lightning fast booking
         console.log('⚡ Phase 3: Lightning booking sequence!');
         const bookingStart = Date.now();
@@ -384,9 +392,9 @@ async function run() {
     } catch (err) {
         console.error('❌ Booking failed:', err.message);
         await page.screenshot({ path: 'error.png' });
-        throw err; // Re-throw to fail the GitHub Action
+        throw err;
     } finally {
-        await delay(10000);
+        await delay(5000);
         await browser.close();
         console.timeEnd('⏱️ Total time');
     }
