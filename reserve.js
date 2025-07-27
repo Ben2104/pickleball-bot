@@ -84,7 +84,7 @@ async function login(page) {
     console.log('🔐 Attempting to login...');
     
     try {
-        // Set anti-detection headers and user agent
+        // Set anti-detection headers (remove setUserAgent call)
         await page.setExtraHTTPHeaders({
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
@@ -92,9 +92,8 @@ async function login(page) {
             'DNT': '1',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         });
-        
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
         
         // Navigate to login page
         console.log('🌐 Navigating to login page...');
@@ -535,7 +534,8 @@ async function run() {
             '--disable-dev-shm-usage',
             '--disable-gpu',
             '--no-first-run',
-            '--no-default-browser-check'
+            '--no-default-browser-check',
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         ]
     });
     
@@ -546,9 +546,15 @@ async function run() {
         Object.defineProperty(navigator, 'webdriver', {
             get: () => undefined,
         });
+        // Remove Chrome automation properties
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+        
+        // Override navigator.userAgent
+        Object.defineProperty(navigator, 'userAgent', {
+            get: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        });
     });
 
     try {
@@ -585,5 +591,6 @@ async function run() {
         console.timeEnd('⏱️ Total time');
     }
 }
+
 
 run().catch(console.error);
