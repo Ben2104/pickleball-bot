@@ -362,7 +362,7 @@ async function run() {
     console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
     
     const browser = await chromium.launch({
-        headless: false, // Always headless for GitHub Actions
+        headless: true, // 
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
