@@ -3,8 +3,9 @@ import { chromium } from 'playwright';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const email = process.env.EMAIL;
-const password = process.env.PASSWORD;
+const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
+const password = process.env.PASSWORD ? String(process.env.PASSWORD).trim() : '';
+
 
 // Add validation here
 if (!email || !password) {
