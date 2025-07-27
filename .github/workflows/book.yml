@@ -1,27 +1,105 @@
-name: Pickleball Court Booking Bot
+name: Automatic Pickleball Reservations on PlayByPoint
 
 on:
   schedule:
+    # Runs at 6:55 AM PST (14:55 UTC) every day to catch 7 AM bookings
     - cron: '55 14 * * *'
-  workflow_dispatch:
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
-  book-court:
+  pickleball-reservation:
+    name: Pickleball Court Booking
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - run: npm install playwright dotenv
-    - run: npx playwright install chromium --with-deps
-        
-    - name: Run bot
-      env:
-        EMAIL: ${{ secrets.EMAIL }}
-        PASSWORD: ${{ secrets.PASSWORD }}
-        BOOKING_HOUR: 7
-        BOOKING_MINUTE: 0
-      run: node reserve.js
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install playwright dotenv
+          
+      - name: Install Playwright Browsers
+        run: |
+          npx playwright install chromium --with-deps
+
+      - name: Run Pickleball Booking Bot
+        run: |
+          echo "🎾 Starting pickleball court booking bot..."
+          echo "📅 Target booking time: 7:00 AM PST"
+          echo "🏟️ Court type: Pickleball"
+          echo "⏰ Time slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm"
+          node reserve.js
+        env:
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          BOOKING_HOUR: "7"
+          BOOKING_MINUTE: "0"
+          NODE_ENV: production
+          GITHUB_ACTIONS: true
+          TZ: America/Los_Angeles
+
+      - name: Zip Screenshots and Logs
+        if: always()
+        run: |
+          # Create artifacts directory
+          mkdir -p artifacts
+          
+          # Copy any screenshots
+          if [ -f "*.png" ]; then
+            cp *.png artifacts/ 2>/dev/null || true
+          fi
+          
+          # Create a summary log
+          echo "🎾 Pickleball Booking Bot Results" > artifacts/booking-summary.txt
+          echo "=================================" >> artifacts/booking-summary.txt
+          echo "📅 Run Date: $(date)" >> artifacts/booking-summary.txt
+          echo "🎯 Target Time: 7:00 AM PST" >> artifacts/booking-summary.txt
+          echo "🏟️ Venue: iPICKLE Cerritos" >> artifacts/booking-summary.txt
+          echo "⏰ Time Slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm" >> artifacts/booking-summary.txt
+          echo "📊 Booking Status: Check job logs for details" >> artifacts/booking-summary.txt
+          
+          # Zip everything
+          if [ "$(ls -A artifacts/)" ]; then
+            zip -r pickleball-booking-results.zip artifacts/
+          else
+            echo "No artifacts to zip"
+          fi
+
+      - name: Upload Booking Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pickleball-booking-results-${{ github.run_number }}
+          path: |
+            pickleball-booking-results.zip
+            *.png
+          retention-days: 30
+
+      - name: Upload Error Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: error-screenshots-${{ github.run_number }}
+          path: "*.png"
+          retention-days: 7
+
+      - name: Notify on Success
+        if: success()
+        run: |
+          echo "🎉 Pickleball booking bot completed successfully!"
+          echo "✅ Check the booking confirmation in your PlayByPoint account"
+          echo "📧 You should receive email confirmation if booking was successful"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Pickleball booking bot failed!"
+          echo "🔍 Check the uploaded screenshots and logs for debugging"
+          echo "💡 Common issues: Invalid credentials, website changes, or 403 Forbidden errors"
