@@ -100,7 +100,7 @@ async function waitForCountdownToEnd(page) {
 
 async function login(page, sessionName) {
     console.log('🔐 Attempting to login...');
-    
+
     try {
         // Human-like navigation with realistic headers
         await page.setExtraHTTPHeaders({
@@ -116,32 +116,32 @@ async function login(page, sessionName) {
             'Sec-Fetch-User': '?1',
             'Cache-Control': 'max-age=0'
         });
-        
+
         console.log('🌐 Navigating to login page...');
-        await page.goto("https://app.playbypoint.com/users/sign_in", { 
+        await page.goto("https://app.playbypoint.com/users/sign_in", {
             waitUntil: 'domcontentloaded',
-            timeout: 60000 
+            timeout: 60000
         });
-        
+
         // Human-like page interaction - scroll a bit to mimic reading
         await page.waitForTimeout(1000 + Math.random() * 2000);
         await page.mouse.move(Math.random() * 100 + 100, Math.random() * 100 + 100);
         await page.waitForTimeout(500 + Math.random() * 1000);
-        
+
         console.log('📄 Login page loaded');
-        
+
         // Take screenshot for debugging
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-01-login-page.png`,
-            fullPage: true 
+            fullPage: true
         });
-        
+
         // Check if we got blocked
         const pageContent = await page.content();
         if (pageContent.includes('403 Forbidden') || pageContent.includes('Access Denied') || pageContent.includes('<html><head></head><body></body></html>')) {
             throw new Error('403 Forbidden - Website is blocking automated access');
         }
-        
+
         // Multiple selector strategies for email field
         const emailSelectors = [
             'input[name="user[email]"]',
@@ -150,20 +150,20 @@ async function login(page, sessionName) {
             'input[id="user_email"]',
             'input[placeholder*="email" i]'
         ];
-        
+
         let emailFilled = false;
         for (const selector of emailSelectors) {
             try {
                 console.log(`📧 Trying email selector: ${selector}`);
                 await page.waitForSelector(selector, { timeout: 10000 });
-                
+
                 // Human-like interaction with realistic typing
                 await page.click(selector);
                 await page.waitForTimeout(200 + Math.random() * 300);
-                
+
                 // Type slowly like a human
                 await page.type(selector, email, { delay: 50 + Math.random() * 100 });
-                
+
                 console.log(`✅ Email filled using: ${selector}`);
                 emailFilled = true;
                 break;
@@ -172,7 +172,7 @@ async function login(page, sessionName) {
                 continue;
             }
         }
-        
+
         if (!emailFilled) {
             const title = await page.title();
             const url = await page.url();
@@ -181,10 +181,10 @@ async function login(page, sessionName) {
             console.log(`📝 Page content preview: ${pageContent.substring(0, 500)}`);
             throw new Error('❌ Could not find email input field with any selector');
         }
-        
+
         // Human-like pause between fields
         await page.waitForTimeout(300 + Math.random() * 700);
-        
+
         // Multiple selector strategies for password field
         const passwordSelectors = [
             'input[name="user[password]"]',
@@ -192,20 +192,20 @@ async function login(page, sessionName) {
             '#user_password',
             'input[id="user_password"]'
         ];
-        
+
         let passwordFilled = false;
         for (const selector of passwordSelectors) {
             try {
                 console.log(`🔒 Trying password selector: ${selector}`);
                 await page.waitForSelector(selector, { timeout: 5000 });
-                
+
                 // Human-like interaction
                 await page.click(selector);
                 await page.waitForTimeout(200 + Math.random() * 300);
-                
+
                 // Type slowly like a human
                 await page.type(selector, password, { delay: 50 + Math.random() * 100 });
-                
+
                 console.log(`✅ Password filled using: ${selector}`);
                 passwordFilled = true;
                 break;
@@ -214,14 +214,14 @@ async function login(page, sessionName) {
                 continue;
             }
         }
-        
+
         if (!passwordFilled) {
             throw new Error('❌ Could not find password input field with any selector');
         }
-        
+
         // Human-like delay before clicking submit (people often pause to check their input)
         await page.waitForTimeout(800 + Math.random() * 1200);
-        
+
         // Multiple selector strategies for login button
         const loginSelectors = [
             'input[type="submit"][name="commit"][value="Log in"]',
@@ -231,13 +231,13 @@ async function login(page, sessionName) {
             'button:has-text("Sign in")',
             '*[type="submit"]'
         ];
-        
+
         let loginSuccess = false;
         for (const selector of loginSelectors) {
             try {
                 console.log(`🔘 Trying login selector: ${selector}`);
                 await page.waitForSelector(selector, { timeout: 3000 });
-                
+
                 // Human-like click with slight mouse movement
                 const button = page.locator(selector).first();
                 const box = await button.boundingBox();
@@ -248,15 +248,15 @@ async function login(page, sessionName) {
                     );
                     await page.waitForTimeout(100 + Math.random() * 200);
                 }
-                
+
                 await Promise.all([
-                    page.waitForNavigation({ 
-                        waitUntil: 'domcontentloaded', 
-                        timeout: 45000 
+                    page.waitForNavigation({
+                        waitUntil: 'domcontentloaded',
+                        timeout: 45000
                     }),
                     page.click(selector)
                 ]);
-                
+
                 console.log(`✅ Login successful using: ${selector}`);
                 loginSuccess = true;
                 break;
@@ -265,38 +265,38 @@ async function login(page, sessionName) {
                 continue;
             }
         }
-        
+
         if (!loginSuccess) {
             throw new Error('❌ Could not find or click login button');
         }
-        
+
         console.log('✅ Logged in successfully');
-        
+
     } catch (error) {
         console.error('❌ Login failed:', error.message);
-        
+
         try {
-            await page.screenshot({ 
+            await page.screenshot({
                 path: `./recordings/${sessionName}-LOGIN-ERROR.png`,
-                fullPage: true 
+                fullPage: true
             });
             const content = await page.content();
             console.log('📝 Page content preview:', content.substring(0, 1000));
         } catch (screenshotErr) {
             console.error('❌ Could not take debug screenshot:', screenshotErr.message);
         }
-        
+
         throw error;
     }
 }
 
 async function goToBookingPage(page, sessionName) {
     console.log('🏟️ Navigating to booking page...');
-    
+
     try {
         const selector = `a.ui.button.large.fluid.white[href="${BOOKING_URL}"]`;
         await page.waitForSelector(selector, { timeout: 15000 });
-        
+
         // Human-like click with mouse movement
         const link = page.locator(selector);
         const box = await link.boundingBox();
@@ -307,23 +307,23 @@ async function goToBookingPage(page, sessionName) {
             );
             await page.waitForTimeout(200 + Math.random() * 300);
         }
-        
+
         await Promise.all([
             page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 30000 }),
             page.click(selector)
         ]);
-        
-        await page.screenshot({ 
+
+        await page.screenshot({
             path: `./recordings/${sessionName}-02-booking-page.png`,
-            fullPage: true 
+            fullPage: true
         });
-        
+
         console.log('✅ Navigated to booking page');
     } catch (error) {
         console.error('❌ Failed to navigate to booking page:', error.message);
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-BOOKING-PAGE-ERROR.png`,
-            fullPage: true 
+            fullPage: true
         });
         throw error;
     }
@@ -344,7 +344,7 @@ function getTargetDateInfo() {
 
 async function selectTargetDate(page, sessionName) {
     console.log('📅 Selecting target date...');
-    
+
     try {
         const { dayName, dayNumber } = getTargetDateInfo();
         const dayButtons = await page.$$('.day-container button');
@@ -364,10 +364,10 @@ async function selectTargetDate(page, sessionName) {
                     await page.waitForTimeout(300 + Math.random() * 500);
                     await btn.click();
                     console.log(`✅ Selected date: ${dayName} ${dayNumber}`);
-                    
-                    await page.screenshot({ 
+
+                    await page.screenshot({
                         path: `./recordings/${sessionName}-03-date-selected.png`,
-                        fullPage: true 
+                        fullPage: true
                     });
                     return;
                 }
@@ -376,9 +376,9 @@ async function selectTargetDate(page, sessionName) {
         throw new Error(`❌ Could not find date: ${dayName} ${dayNumber}`);
     } catch (error) {
         console.error('❌ Date selection failed:', error.message);
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-DATE-ERROR.png`,
-            fullPage: true 
+            fullPage: true
         });
         throw error;
     }
@@ -386,29 +386,29 @@ async function selectTargetDate(page, sessionName) {
 
 async function selectCourtType(page, sessionName) {
     console.log('🎾 Selecting court type...');
-    
+
     try {
         const courtButton = await page.locator(`button:has-text("${COURT_TYPE}")`).first();
         await courtButton.waitFor({ timeout: 10000 });
-        
+
         if (await courtButton.isVisible() && await courtButton.isEnabled()) {
             // Human-like delay and click
             await page.waitForTimeout(400 + Math.random() * 600);
             await courtButton.click();
             console.log(`✅ Selected court type: ${COURT_TYPE}`);
-            
-            await page.screenshot({ 
+
+            await page.screenshot({
                 path: `./recordings/${sessionName}-04-court-selected.png`,
-                fullPage: true 
+                fullPage: true
             });
         } else {
             throw new Error(`❌ Court type button not available: ${COURT_TYPE}`);
         }
     } catch (error) {
         console.error('❌ Court type selection failed:', error.message);
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-COURT-ERROR.png`,
-            fullPage: true 
+            fullPage: true
         });
         throw error;
     }
@@ -441,38 +441,157 @@ async function selectTimeSlots(page, sessionName) {
         }
     }
 
-    await page.screenshot({ 
+    await page.screenshot({
         path: `./recordings/${sessionName}-05-time-slots.png`,
-        fullPage: true 
+        fullPage: true
     });
 
     console.log('⚡ Time slot selection complete');
 }
+async function selectCourtsByPriority(page, sessionName) {
+    console.log('🏟️ Selecting ONE court by priority...');
 
+    const courtPriorityMap = new Map([
+        [0, "PICKLEBALL 2"],
+        [1, "PICKLEBALL 4"],
+        [2, "PICKLEBALL 8"],
+        [3, "PICKLEBALL 9"],
+        [4, "PICKLEBALL 3"],
+        [5, "PICKLEBALL 6"],
+        [6, "PICKLEBALL 7"],
+        [7, "PICKLEBALL 1"],
+        [8, "PICKLEBALL 5"],
+        [9, "PICKLEBALL 10"],
+    ]);
+
+    let selectedCourt = null;
+
+    try {
+        // Wait for courts to be available
+        await page.waitForTimeout(500);
+
+        console.log('🎯 Starting court selection by priority (selecting ONLY ONE court)...');
+
+        // Iterate through courts by priority (0 = highest priority)
+        for (let priority = 0; priority < courtPriorityMap.size; priority++) {
+            const courtName = courtPriorityMap.get(priority);
+            console.log(`🏟️ Priority ${priority}: Checking ${courtName}...`);
+
+            try {
+                // Multiple selector strategies for court buttons
+                const courtSelectors = [
+                    `button:has-text("${courtName}")`,
+                    `button[title*="${courtName}"]`,
+                    `button:contains("${courtName}")`,
+                    `*:has-text("${courtName}"):button`,
+                    `.court-button:has-text("${courtName}")`,
+                    `[data-court*="${courtName.toLowerCase()}"]`
+                ];
+
+                let courtSelected = false;
+
+                for (const selector of courtSelectors) {
+                    try {
+                        const courtButton = page.locator(selector).first();
+
+                        // Check if button exists and is visible
+                        const isVisible = await courtButton.isVisible({ timeout: 1000 });
+
+                        if (isVisible) {
+                            const isEnabled = await courtButton.isEnabled();
+                            const isSelected = await courtButton.getAttribute('class') || '';
+
+                            console.log(`   📋 ${courtName} - Visible: ${isVisible}, Enabled: ${isEnabled}`);
+
+                            // Check if court is available (not already selected or disabled)
+                            if (isEnabled && !isSelected.includes('selected') && !isSelected.includes('disabled')) {
+                                // Human-like click with small delay
+                                await page.waitForTimeout(100 + Math.random() * 200);
+
+                                await courtButton.click();
+                                console.log(`✅ Successfully selected ${courtName} (Priority ${priority}) - ONLY COURT SELECTED`);
+                                selectedCourt = courtName;
+                                courtSelected = true;
+
+                                // Exit immediately after selecting one court
+                                break;
+                            } else {
+                                console.log(`   ⚠️ ${courtName} not available (disabled or already selected)`);
+                            }
+                        }
+                    } catch (selectorError) {
+                        // Continue to next selector
+                        continue;
+                    }
+                }
+
+                // If we successfully selected a court, exit the priority loop
+                if (courtSelected) {
+                    console.log(`🎯 Court selection complete - Selected: ${courtName}`);
+                    break;
+                }
+
+                if (!courtSelected) {
+                    console.log(`   ❌ ${courtName} not found or not clickable, trying next priority...`);
+                }
+
+            } catch (courtError) {
+                console.log(`   ❌ Error with ${courtName}: ${courtError.message}`);
+                continue;
+            }
+        }
+
+        // Summary of selected court
+        if (selectedCourt) {
+            console.log(`🎉 Successfully selected court: ${selectedCourt}`);
+            console.log(`🏆 This was the highest priority available court`);
+        } else {
+            console.log('❌ No courts were available');
+
+            // Take debug screenshot if no courts selected
+            await page.screenshot({
+                path: `./recordings/${sessionName}-NO-COURTS-AVAILABLE-ERROR.png`,
+                fullPage: true
+            });
+        }
+
+        return selectedCourt; // Return single court name or null
+
+    } catch (error) {
+        console.error('❌ Court selection failed:', error.message);
+
+        await page.screenshot({
+            path: `./recordings/${sessionName}-COURT-SELECTION-ERROR.png`,
+            fullPage: true
+        });
+
+        throw error;
+    }
+}
 async function clickNext(page, sessionName) {
     console.log('⏭️ Clicking Next...');
-    
+
     try {
         const next = page.locator('button:has-text("Next")').first();
         // Fixed: Proper timeout for waitFor
         await next.waitFor({ timeout: 10000 });
-        
+
         if (await next.isVisible() && await next.isEnabled()) {
             await next.click();
             console.log('✅ Clicked NEXT');
-            
-            await page.screenshot({ 
+
+            await page.screenshot({
                 path: `./recordings/${sessionName}-06-after-next.png`,
-                fullPage: true 
+                fullPage: true
             });
         } else {
             throw new Error('❌ NEXT button not found');
         }
     } catch (error) {
         console.error('❌ Next button click failed:', error.message);
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-NEXT-ERROR.png`,
-            fullPage: true 
+            fullPage: true
         });
         throw error;
     }
@@ -527,18 +646,18 @@ async function clickCheckout(page, sessionName) {
 
         for (const selector of selectors) {
             try {
-                
+
                 const checkoutBtn = page.locator(selector).first();
 
                 if (await checkoutBtn.isVisible()) {
                     await checkoutBtn.click();
                     console.log(`✅ Successfully clicked Checkout using: ${selector}`);
-                    
-                    await page.screenshot({ 
+
+                    await page.screenshot({
                         path: `./recordings/${sessionName}-08-checkout.png`,
-                        fullPage: true 
+                        fullPage: true
                     });
-                    
+
                     return true;
                 }
             } catch (selectorError) {
@@ -566,18 +685,18 @@ async function addUsers(page, sessionName) {
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
             await addUsersBtn.click();
             console.log('✅ Clicked ADD USERS button');
-        
+
 
             const addButtonClicked = await clickAddButton(page);
 
             if (addButtonClicked) {
                 console.log('✅ Users added successfully');
-                
-                await page.screenshot({ 
+
+                await page.screenshot({
                     path: `./recordings/${sessionName}-07-users-added.png`,
-                    fullPage: true 
+                    fullPage: true
                 });
-                
+
                 return true;
             } else {
                 console.error('❌ Failed to click ADD button');
@@ -591,9 +710,9 @@ async function addUsers(page, sessionName) {
 
     } catch (error) {
         console.error('❌ Error adding users:', error.message);
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-ADD-USERS-ERROR.png`,
-            fullPage: true 
+            fullPage: true
         });
         return false;
     }
@@ -612,12 +731,12 @@ async function clickBook(page, sessionName) {
             if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
                 await bookBtn.click();
                 console.log('🎉 Successfully clicked BOOK button - Booking Complete!');
-                
-                await page.screenshot({ 
+
+                await page.screenshot({
                     path: `./recordings/${sessionName}-09-BOOKING-COMPLETE.png`,
-                    fullPage: true 
+                    fullPage: true
                 });
-                
+
                 await page.waitForTimeout(1000);
                 return true;
             } else {
@@ -631,10 +750,96 @@ async function clickBook(page, sessionName) {
 
     } catch (error) {
         console.error('❌ Error clicking Book button:', error.message);
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-BOOK-ERROR.png`,
-            fullPage: true 
+            fullPage: true
         });
+        return false;
+    }
+}
+
+async function clickSelectDateAndTime(page, sessionName) {
+    console.log('📅 Looking for "Select date and time" step...');
+
+    try {
+        const selectors = [
+            'h2.mb0.stepper_title:has-text("Select date and time")',
+            'h2:has-text("Select date and time")',
+            '.stepper_title:has-text("Select date and time")',
+            '*:has-text("Select date and time")',
+            'h2.stepper_title:contains("Select date and time")',
+            '[class*="stepper"]:has-text("Select date and time")'
+        ];
+
+        for (const selector of selectors) {
+            try {
+                console.log(`📋 Trying selector: ${selector}`);
+
+                const stepButton = page.locator(selector).first();
+
+                // Check if element exists and is visible
+                const isVisible = await stepButton.isVisible({ timeout: 2000 });
+
+                if (isVisible) {
+                    const isEnabled = await stepButton.isEnabled();
+                    console.log(`   📋 "Select date and time" - Visible: ${isVisible}, Enabled: ${isEnabled}`);
+
+                    // Human-like click with small delay
+                    await page.waitForTimeout(200 + Math.random() * 300);
+
+                    await stepButton.click();
+                    console.log(`✅ Successfully clicked "Select date and time" using: ${selector}`);
+
+                    // Take screenshot after clicking
+                    await page.screenshot({
+                        path: `./recordings/${sessionName}-select-date-time-clicked.png`,
+                        fullPage: true
+                    });
+
+                    // Wait for any navigation or page updates
+                    await page.waitForTimeout(1000);
+
+                    return true;
+                } else {
+                    console.log(`   ⚠️ "Select date and time" not visible with selector: ${selector}`);
+                }
+            } catch (selectorError) {
+                console.log(`   ⚠️ Selector ${selector} failed: ${selectorError.message}`);
+                continue;
+            }
+        }
+
+        console.error('❌ "Select date and time" button not found with any selector');
+
+        // Take debug screenshot
+        await page.screenshot({
+            path: `./recordings/${sessionName}-SELECT-DATE-TIME-NOT-FOUND.png`,
+            fullPage: true
+        });
+
+        // Log available stepper elements for debugging
+        console.log('🔍 Looking for any stepper-related elements...');
+        const stepperElements = await page.$$('[class*="stepper"], h2, .mb0');
+        for (let i = 0; i < Math.min(stepperElements.length, 10); i++) {
+            try {
+                const elementText = await stepperElements[i].textContent();
+                const elementClass = await stepperElements[i].getAttribute('class');
+                console.log(`   Stepper element ${i + 1}: "${elementText?.trim() || 'No text'}" (class: ${elementClass})`);
+            } catch (e) {
+                console.log(`   Stepper element ${i + 1}: Error reading properties`);
+            }
+        }
+
+        return false;
+
+    } catch (error) {
+        console.error('❌ Error clicking "Select date and time":', error.message);
+
+        await page.screenshot({
+            path: `./recordings/${sessionName}-SELECT-DATE-TIME-ERROR.png`,
+            fullPage: true
+        });
+
         return false;
     }
 }
@@ -644,7 +849,7 @@ async function run() {
     console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
 
     const sessionName = createTimestampedFileName();
-    
+
     // Create recordings directory
     try {
         await mkdir('./recordings', { recursive: true });
@@ -687,7 +892,7 @@ async function run() {
             `--user-agent=${STEALTH_CONFIG.userAgent}`
         ]
     });
-    
+
     // Create stealth context with VIDEO RECORDING
     const context = await browser.newContext({
         userAgent: STEALTH_CONFIG.userAgent,
@@ -707,42 +912,42 @@ async function run() {
             size: { width: 1440, height: 900 }
         }
     });
-    
+
     const page = await context.newPage();
-    
+
     // Take initial screenshot
-    await page.screenshot({ 
+    await page.screenshot({
         path: `./recordings/${sessionName}-00-start.png`,
-        fullPage: true 
+        fullPage: true
     });
-    
+
     // Advanced stealth JavaScript injection
     await page.addInitScript(() => {
         // Remove webdriver property
         Object.defineProperty(navigator, 'webdriver', {
             get: () => undefined,
         });
-        
+
         // Remove automation indicators
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Object;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Proxy;
-        
+
         // Override navigator properties
         Object.defineProperty(navigator, 'userAgent', {
             get: () => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
         });
-        
+
         Object.defineProperty(navigator, 'platform', {
             get: () => 'MacIntel',
         });
-        
+
         Object.defineProperty(navigator, 'languages', {
             get: () => ['en-US', 'en'],
         });
-        
+
         Object.defineProperty(navigator, 'plugins', {
             get: () => [
                 {
@@ -759,7 +964,7 @@ async function run() {
                 }
             ],
         });
-        
+
         // Mock realistic screen properties
         Object.defineProperty(screen, 'width', {
             get: () => 1440,
@@ -773,7 +978,7 @@ async function run() {
         Object.defineProperty(screen, 'availHeight', {
             get: () => 877,
         });
-        
+
         // Override permissions
         const originalQuery = window.navigator.permissions.query;
         window.navigator.permissions.query = (parameters) => (
@@ -781,10 +986,10 @@ async function run() {
                 Promise.resolve({ state: Notification.permission }) :
                 originalQuery(parameters)
         );
-        
+
         // Add realistic WebGL properties
         const getParameter = WebGLRenderingContext.getParameter;
-        WebGLRenderingContext.prototype.getParameter = function(parameter) {
+        WebGLRenderingContext.prototype.getParameter = function (parameter) {
             if (parameter === 37445) {
                 return 'Intel Inc.';
             }
@@ -795,6 +1000,7 @@ async function run() {
         };
     });
 
+    let booked = false;
     try {
         console.log('🚀 Phase 1: Setting up booking...');
         await login(page, sessionName);
@@ -808,12 +1014,34 @@ async function run() {
 
         console.log('⚡ Phase 3: Lightning booking sequence!');
         const bookingStart = Date.now();
+        const BOOKING_LOOP_TIMEOUT = 60 * 1000; // 60 seconds
 
         await selectTimeSlots(page, sessionName);
-        await clickNext(page, sessionName);
-        await addUsers(page, sessionName);
-        await clickCheckout(page, sessionName);
-        await clickBook(page, sessionName);
+        while (true) {
+            // Check if we've exceeded the timeout
+            if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
+                throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
+            }
+
+            await selectCourtsByPriority(page, sessionName);
+            await clickNext(page, sessionName);
+            await addUsers(page, sessionName);
+            await clickCheckout(page, sessionName);
+            await clickBook(page, sessionName);
+
+            if (page.url().includes('confirmation') || page.url().includes('success') || page.url() !== 'https://app.playbypoint.com' + BOOKING_URL) {
+                booked = true;
+                console.log('🎉 Booking confirmed! Redirected to confirmation page.');
+                break;
+            }
+            
+            else {
+                await clickSelectDateAndTime(page, sessionName);
+                console.log('🔄 Getting another court');
+                continue;
+            }
+        }
+
 
         const bookingTime = Date.now() - bookingStart;
         console.log(`🏆 BOOKING COMPLETE! Total booking time: ${bookingTime}ms`);
@@ -821,23 +1049,23 @@ async function run() {
 
     } catch (err) {
         console.error('❌ Booking failed:', err.message);
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-FINAL-ERROR.png`,
-            fullPage: true 
+            fullPage: true
         });
         throw err;
     } finally {
         await delay(10000);
-        
+
         // Take final screenshot
-        await page.screenshot({ 
+        await page.screenshot({
             path: `./recordings/${sessionName}-99-end.png`,
-            fullPage: true 
+            fullPage: true
         });
-        
+
         await context.close();
         await browser.close();
-        
+
         console.timeEnd('⏱️ Total time');
     }
 }
