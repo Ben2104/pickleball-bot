@@ -424,7 +424,6 @@ async function selectTimeSlots(page, sessionName) {
         const btn = page.locator(`button:has-text("${time}")`).first();
 
         try {
-            await btn.waitFor({ timeout: 3000 });
             const isVisible = await btn.isVisible();
             const isEnabled = await btn.isEnabled();
 
@@ -434,7 +433,6 @@ async function selectTimeSlots(page, sessionName) {
                 // Fixed: Remove timeout from click - it's not a valid option
                 await btn.click();
                 console.log(`✅ Selected time slot: ${time}`);
-                await page.waitForTimeout(100 + Math.random() * 200);
             } else {
                 console.log(`❌ Not clickable: ${time}`);
             }
@@ -529,7 +527,7 @@ async function clickCheckout(page, sessionName) {
 
         for (const selector of selectors) {
             try {
-                await page.waitForSelector(selector, { timeout: 2000 });
+                
                 const checkoutBtn = page.locator(selector).first();
 
                 if (await checkoutBtn.isVisible()) {
@@ -606,15 +604,12 @@ async function clickBook(page, sessionName) {
 
     try {
         const exactSelector = 'button.ui.button.primary.fluid.large';
-        await page.waitForSelector(exactSelector, { timeout: 5000 });
 
         const bookBtn = page.locator(exactSelector).first();
 
         if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
             const buttonText = await bookBtn.textContent();
             if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
-                // Human-like pause before final action
-                await page.waitForTimeout(500 + Math.random() * 800);
                 await bookBtn.click();
                 console.log('🎉 Successfully clicked BOOK button - Booking Complete!');
                 
