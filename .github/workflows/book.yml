@@ -26,7 +26,6 @@ jobs:
   pickleball-reservation:
     name: Pickleball Court Booking
     runs-on: ubuntu-latest
-    timeout-minutes: 25
 
     steps:
       - name: Checkout code
