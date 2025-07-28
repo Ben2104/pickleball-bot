@@ -63,7 +63,7 @@ jobs:
           echo "🎾 Starting pickleball court booking bot..."
           echo "📅 Target booking time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
           echo "🏟️ Court type: Pickleball"
-          echo "⏰ Time slots: 7-7:30am, 7:30-8am, 8-8:30am, 8:30-9am"
+          echo "⏰ Time slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm"
           echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
           
@@ -132,7 +132,7 @@ jobs:
           echo "📅 Run Date: $(date)" >> artifacts/booking-summary.txt
           echo "🎯 Target Time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST" >> artifacts/booking-summary.txt
           echo "🏟️ Venue: iPICKLE Cerritos" >> artifacts/booking-summary.txt
-          echo "⏰ Time Slots: 7-7:30am, 7:30-8am, 8-8:30am, 8:30-9am" >> artifacts/booking-summary.txt
+          echo "⏰ Time Slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm" >> artifacts/booking-summary.txt
           echo "🎬 Recording Enabled: ${{ github.event.inputs.enable_recording || 'true' }}" >> artifacts/booking-summary.txt
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}" >> artifacts/booking-summary.txt
           echo "📊 Job Status: ${{ job.status }}" >> artifacts/booking-summary.txt
