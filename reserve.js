@@ -21,8 +21,8 @@ const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
 const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
 
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 19;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 7;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -392,10 +392,8 @@ async function selectTimeSlots(page) {
 
             if (isVisible && isEnabled) {
                 // Human-like delay between clicks
-                await page.waitForTimeout(100 + Math.random() * 200);
-                await btn.click({ timeout: 1000 });
+                await btn.click({ timeout: 50 });
                 console.log(`✅ Selected time slot: ${time}`);
-                await page.waitForTimeout(150 + Math.random() * 250);
             } else {
                 console.log(`❌ Not clickable: ${time}`);
             }
@@ -412,11 +410,10 @@ async function clickNext(page) {
     
     try {
         const next = page.locator('button:has-text("Next")').first();
-        await next.waitFor({ timeout: 10000 });
+        await next.waitFor({ timeout: 100 });
         
         if (await next.isVisible() && await next.isEnabled()) {
             // Human-like delay before clicking
-            await page.waitForTimeout(300 + Math.random() * 500);
             await next.click();
             console.log('✅ Clicked NEXT');
         } else {
@@ -484,7 +481,6 @@ async function clickCheckout(page) {
                 const checkoutBtn = page.locator(selector).first();
 
                 if (await checkoutBtn.isVisible()) {
-                    await page.waitForTimeout(300 + Math.random() * 400);
                     await checkoutBtn.click();
                     console.log(`✅ Successfully clicked Checkout using: ${selector}`);
                     await page.waitForTimeout(500);
@@ -552,8 +548,6 @@ async function clickBook(page) {
         if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
             const buttonText = await bookBtn.textContent();
             if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
-                // Human-like pause before final action
-                await page.waitForTimeout(500 + Math.random() * 800);
                 await bookBtn.click();
                 console.log('🎉 Successfully clicked BOOK button - Booking Complete!');
                 await page.waitForTimeout(1000);
@@ -580,7 +574,7 @@ async function run() {
 
     // Advanced stealth browser configuration
     const browser = await chromium.launch({
-        headless: true,
+        headless: false,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',

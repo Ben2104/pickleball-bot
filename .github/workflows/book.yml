@@ -42,8 +42,8 @@ jobs:
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
-          BOOKING_HOUR: "18"
-          BOOKING_MINUTE: "35"
+          BOOKING_HOUR: "19"
+          BOOKING_MINUTE: "15"
           NODE_ENV: production
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
