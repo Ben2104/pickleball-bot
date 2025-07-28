@@ -574,7 +574,7 @@ async function run() {
 
     // Advanced stealth browser configuration
     const browser = await chromium.launch({
-        headless: false,
+        headless: true,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
