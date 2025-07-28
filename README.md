@@ -3,7 +3,7 @@
 
 # 🏓 Pickleball Reservation Bot
 
-A Chrome Extension that automates the court booking process at iPickle Cerritos. Designed to handle the high demand and fast-paced reservation system by automatically booking courts as soon as they become available — **7 days in advance at 7:00 AM**.
+An automation bot that automates the court booking process at iPickle Cerritos. Designed to handle the high demand and fast-paced reservation system by automatically booking courts as soon as they become available — **7 days in advance at 7:00 AM**.
 
 
 ## 🚀 Motivation
