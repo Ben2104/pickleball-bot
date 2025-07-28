@@ -20,11 +20,42 @@ console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}**
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
+const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
 
 const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
 const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+// Environment-based configuration
+const ENABLE_RECORDING = process.env.ENABLE_RECORDING === 'true';
+const SPEED_MODE = process.env.GITHUB_ACTIONS === 'true'; // Auto-enable speed mode in GitHub Actions
+const LOCAL_DEV = !process.env.GITHUB_ACTIONS;
+
+// Optimized delay function
+const delay = (ms) => {
+    if (SPEED_MODE) {
+        return new Promise(res => setTimeout(res, Math.min(ms, 500))); // Max 500ms in speed mode
+    }
+    return new Promise(res => setTimeout(res, ms));
+};
+
+// Conditional screenshot function - only for critical debugging
+async function takeScreenshot(page, sessionName, filename) {
+    // Only take screenshots locally or for critical errors in GitHub Actions
+    if (!LOCAL_DEV && !filename.includes('ERROR') && !filename.includes('FINAL')) {
+        return; // Skip non-critical screenshots in GitHub Actions
+    }
+    
+    try {
+        await page.screenshot({ 
+            path: `./recordings/${sessionName}-${filename}.png`,
+            fullPage: false, // Faster viewport-only screenshots
+            quality: 60 // Balanced quality for speed
+        });
+        console.log(`📸 Screenshot saved: ${filename}`);
+    } catch (err) {
+        console.log(`⚠️ Screenshot skipped: ${err.message}`);
+    }
+}
 
 // Stealth configuration
 const STEALTH_CONFIG = {
@@ -123,18 +154,15 @@ async function login(page, sessionName) {
             timeout: 60000
         });
 
-        // Human-like page interaction - scroll a bit to mimic reading
-        await page.waitForTimeout(1000 + Math.random() * 2000);
+        // Reduced delays for speed
+        await delay(SPEED_MODE ? 500 : 1000 + Math.random() * 2000);
         await page.mouse.move(Math.random() * 100 + 100, Math.random() * 100 + 100);
-        await page.waitForTimeout(500 + Math.random() * 1000);
+        await delay(SPEED_MODE ? 200 : 500 + Math.random() * 1000);
 
         console.log('📄 Login page loaded');
 
-        // Take screenshot for debugging
-        await page.screenshot({
-            path: `./recordings/${sessionName}-01-login-page.png`,
-            fullPage: true
-        });
+        // Only take screenshot if in local dev
+        await takeScreenshot(page, sessionName, '01-login-page');
 
         // Check if we got blocked
         const pageContent = await page.content();
@@ -157,12 +185,12 @@ async function login(page, sessionName) {
                 console.log(`📧 Trying email selector: ${selector}`);
                 await page.waitForSelector(selector, { timeout: 10000 });
 
-                // Human-like interaction with realistic typing
+                // Human-like interaction with optimized timing
                 await page.click(selector);
-                await page.waitForTimeout(200 + Math.random() * 300);
+                await delay(SPEED_MODE ? 100 : 200 + Math.random() * 300);
 
-                // Type slowly like a human
-                await page.type(selector, email, { delay: 50 + Math.random() * 100 });
+                // Type with optimized speed
+                await page.type(selector, email, { delay: SPEED_MODE ? 10 : 50 + Math.random() * 100 });
 
                 console.log(`✅ Email filled using: ${selector}`);
                 emailFilled = true;
@@ -182,8 +210,8 @@ async function login(page, sessionName) {
             throw new Error('❌ Could not find email input field with any selector');
         }
 
-        // Human-like pause between fields
-        await page.waitForTimeout(300 + Math.random() * 700);
+        // Optimized pause between fields
+        await delay(SPEED_MODE ? 150 : 300 + Math.random() * 700);
 
         // Multiple selector strategies for password field
         const passwordSelectors = [
@@ -199,12 +227,12 @@ async function login(page, sessionName) {
                 console.log(`🔒 Trying password selector: ${selector}`);
                 await page.waitForSelector(selector, { timeout: 5000 });
 
-                // Human-like interaction
+                // Human-like interaction with optimized timing
                 await page.click(selector);
-                await page.waitForTimeout(200 + Math.random() * 300);
+                await delay(SPEED_MODE ? 100 : 200 + Math.random() * 300);
 
-                // Type slowly like a human
-                await page.type(selector, password, { delay: 50 + Math.random() * 100 });
+                // Type with optimized speed
+                await page.type(selector, password, { delay: SPEED_MODE ? 10 : 50 + Math.random() * 100 });
 
                 console.log(`✅ Password filled using: ${selector}`);
                 passwordFilled = true;
@@ -219,8 +247,8 @@ async function login(page, sessionName) {
             throw new Error('❌ Could not find password input field with any selector');
         }
 
-        // Human-like delay before clicking submit (people often pause to check their input)
-        await page.waitForTimeout(800 + Math.random() * 1200);
+        // Optimized delay before submit
+        await delay(SPEED_MODE ? 200 : 800 + Math.random() * 1200);
 
         // Multiple selector strategies for login button
         const loginSelectors = [
@@ -238,24 +266,29 @@ async function login(page, sessionName) {
                 console.log(`🔘 Trying login selector: ${selector}`);
                 await page.waitForSelector(selector, { timeout: 3000 });
 
-                // Human-like click with slight mouse movement
-                const button = page.locator(selector).first();
-                const box = await button.boundingBox();
-                if (box) {
-                    await page.mouse.move(
-                        box.x + box.width / 2 + (Math.random() - 0.5) * 10,
-                        box.y + box.height / 2 + (Math.random() - 0.5) * 10
-                    );
-                    await page.waitForTimeout(100 + Math.random() * 200);
-                }
+                // Optimized click without mouse movement in speed mode
+                if (SPEED_MODE) {
+                    await Promise.all([
+                        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 45000 }),
+                        page.click(selector)
+                    ]);
+                } else {
+                    // Human-like click with slight mouse movement for local dev
+                    const button = page.locator(selector).first();
+                    const box = await button.boundingBox();
+                    if (box) {
+                        await page.mouse.move(
+                            box.x + box.width / 2 + (Math.random() - 0.5) * 10,
+                            box.y + box.height / 2 + (Math.random() - 0.5) * 10
+                        );
+                        await delay(100 + Math.random() * 200);
+                    }
 
-                await Promise.all([
-                    page.waitForNavigation({
-                        waitUntil: 'domcontentloaded',
-                        timeout: 45000
-                    }),
-                    page.click(selector)
-                ]);
+                    await Promise.all([
+                        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 45000 }),
+                        page.click(selector)
+                    ]);
+                }
 
                 console.log(`✅ Login successful using: ${selector}`);
                 loginSuccess = true;
@@ -274,18 +307,7 @@ async function login(page, sessionName) {
 
     } catch (error) {
         console.error('❌ Login failed:', error.message);
-
-        try {
-            await page.screenshot({
-                path: `./recordings/${sessionName}-LOGIN-ERROR.png`,
-                fullPage: true
-            });
-            const content = await page.content();
-            console.log('📝 Page content preview:', content.substring(0, 1000));
-        } catch (screenshotErr) {
-            console.error('❌ Could not take debug screenshot:', screenshotErr.message);
-        }
-
+        await takeScreenshot(page, sessionName, 'LOGIN-ERROR');
         throw error;
     }
 }
@@ -297,34 +319,35 @@ async function goToBookingPage(page, sessionName) {
         const selector = `a.ui.button.large.fluid.white[href="${BOOKING_URL}"]`;
         await page.waitForSelector(selector, { timeout: 15000 });
 
-        // Human-like click with mouse movement
-        const link = page.locator(selector);
-        const box = await link.boundingBox();
-        if (box) {
-            await page.mouse.move(
-                box.x + box.width / 2 + (Math.random() - 0.5) * 20,
-                box.y + box.height / 2 + (Math.random() - 0.5) * 10
-            );
-            await page.waitForTimeout(200 + Math.random() * 300);
+        // Optimized click for speed mode
+        if (SPEED_MODE) {
+            await Promise.all([
+                page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 30000 }),
+                page.click(selector)
+            ]);
+        } else {
+            // Human-like click for local dev
+            const link = page.locator(selector);
+            const box = await link.boundingBox();
+            if (box) {
+                await page.mouse.move(
+                    box.x + box.width / 2 + (Math.random() - 0.5) * 20,
+                    box.y + box.height / 2 + (Math.random() - 0.5) * 10
+                );
+                await delay(200 + Math.random() * 300);
+            }
+
+            await Promise.all([
+                page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 30000 }),
+                page.click(selector)
+            ]);
         }
 
-        await Promise.all([
-            page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 30000 }),
-            page.click(selector)
-        ]);
-
-        await page.screenshot({
-            path: `./recordings/${sessionName}-02-booking-page.png`,
-            fullPage: true
-        });
-
+        await takeScreenshot(page, sessionName, '02-booking-page');
         console.log('✅ Navigated to booking page');
     } catch (error) {
         console.error('❌ Failed to navigate to booking page:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-BOOKING-PAGE-ERROR.png`,
-            fullPage: true
-        });
+        await takeScreenshot(page, sessionName, 'BOOKING-PAGE-ERROR');
         throw error;
     }
 }
@@ -358,17 +381,13 @@ async function selectTargetDate(page, sessionName) {
                 const name = (await nameEl.textContent()).trim();
                 const number = (await numberEl.textContent()).trim();
 
-
                 if (name === dayName && number === dayNumber) {
-                    // Human-like click with delay
-                    await page.waitForTimeout(300 + Math.random() * 500);
+                    // Optimized click timing
+                    await delay(SPEED_MODE ? 200 : 300 + Math.random() * 500);
                     await btn.click();
                     console.log(`✅ Selected date: ${dayName} ${dayNumber}`);
 
-                    await page.screenshot({
-                        path: `./recordings/${sessionName}-03-date-selected.png`,
-                        fullPage: true
-                    });
+                    await takeScreenshot(page, sessionName, '03-date-selected');
                     return;
                 }
             }
@@ -376,10 +395,7 @@ async function selectTargetDate(page, sessionName) {
         throw new Error(`❌ Could not find date: ${dayName} ${dayNumber}`);
     } catch (error) {
         console.error('❌ Date selection failed:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-DATE-ERROR.png`,
-            fullPage: true
-        });
+        await takeScreenshot(page, sessionName, 'DATE-ERROR');
         throw error;
     }
 }
@@ -392,24 +408,18 @@ async function selectCourtType(page, sessionName) {
         await courtButton.waitFor({ timeout: 10000 });
 
         if (await courtButton.isVisible() && await courtButton.isEnabled()) {
-            // Human-like delay and click
-            await page.waitForTimeout(400 + Math.random() * 600);
+            // Optimized delay and click
+            await delay(SPEED_MODE ? 200 : 400 + Math.random() * 600);
             await courtButton.click();
             console.log(`✅ Selected court type: ${COURT_TYPE}`);
 
-            await page.screenshot({
-                path: `./recordings/${sessionName}-04-court-selected.png`,
-                fullPage: true
-            });
+            await takeScreenshot(page, sessionName, '04-court-selected');
         } else {
             throw new Error(`❌ Court type button not available: ${COURT_TYPE}`);
         }
     } catch (error) {
         console.error('❌ Court type selection failed:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-COURT-ERROR.png`,
-            fullPage: true
-        });
+        await takeScreenshot(page, sessionName, 'COURT-ERROR');
         throw error;
     }
 }
@@ -417,7 +427,7 @@ async function selectCourtType(page, sessionName) {
 async function selectTimeSlots(page, sessionName) {
     console.log('🕒 Starting time slot selection...');
 
-    await page.waitForTimeout(2000);
+    await delay(SPEED_MODE ? 1000 : 2000);
 
     for (const time of TIME_SLOTS) {
         console.log(`🎯 Attempting to select: ${time}`);
@@ -430,7 +440,6 @@ async function selectTimeSlots(page, sessionName) {
             console.log(`   Button status - Visible: ${isVisible}, Enabled: ${isEnabled}`);
 
             if (isVisible && isEnabled) {
-                // Fixed: Remove timeout from click - it's not a valid option
                 await btn.click();
                 console.log(`✅ Selected time slot: ${time}`);
             } else {
@@ -441,13 +450,10 @@ async function selectTimeSlots(page, sessionName) {
         }
     }
 
-    await page.screenshot({
-        path: `./recordings/${sessionName}-05-time-slots.png`,
-        fullPage: true
-    });
-
+    await takeScreenshot(page, sessionName, '05-time-slots');
     console.log('⚡ Time slot selection complete');
 }
+
 async function selectCourtsByPriority(page, sessionName) {
     console.log('🏟️ Selecting ONE court by priority...');
 
@@ -467,8 +473,8 @@ async function selectCourtsByPriority(page, sessionName) {
     let selectedCourt = null;
 
     try {
-        // Wait for courts to be available
-        await page.waitForTimeout(500);
+        // Optimized wait time
+        await delay(SPEED_MODE ? 300 : 500);
 
         console.log('🎯 Starting court selection by priority (selecting ONLY ONE court)...');
 
@@ -505,8 +511,8 @@ async function selectCourtsByPriority(page, sessionName) {
 
                             // Check if court is available (not already selected or disabled)
                             if (isEnabled && !isSelected.includes('selected') && !isSelected.includes('disabled')) {
-                                // Human-like click with small delay
-                                await page.waitForTimeout(100 + Math.random() * 200);
+                                // Optimized click delay
+                                await delay(SPEED_MODE ? 50 : 100 + Math.random() * 200);
 
                                 await courtButton.click();
                                 console.log(`✅ Successfully selected ${courtName} (Priority ${priority}) - ONLY COURT SELECTED`);
@@ -547,52 +553,35 @@ async function selectCourtsByPriority(page, sessionName) {
             console.log(`🏆 This was the highest priority available court`);
         } else {
             console.log('❌ No courts were available');
-
-            // Take debug screenshot if no courts selected
-            await page.screenshot({
-                path: `./recordings/${sessionName}-NO-COURTS-AVAILABLE-ERROR.png`,
-                fullPage: true
-            });
+            await takeScreenshot(page, sessionName, 'NO-COURTS-AVAILABLE-ERROR');
         }
 
         return selectedCourt; // Return single court name or null
 
     } catch (error) {
         console.error('❌ Court selection failed:', error.message);
-
-        await page.screenshot({
-            path: `./recordings/${sessionName}-COURT-SELECTION-ERROR.png`,
-            fullPage: true
-        });
-
+        await takeScreenshot(page, sessionName, 'COURT-SELECTION-ERROR');
         throw error;
     }
 }
+
 async function clickNext(page, sessionName) {
     console.log('⏭️ Clicking Next...');
 
     try {
         const next = page.locator('button:has-text("Next")').first();
-        // Fixed: Proper timeout for waitFor
         await next.waitFor({ timeout: 10000 });
 
         if (await next.isVisible() && await next.isEnabled()) {
             await next.click();
             console.log('✅ Clicked NEXT');
-
-            await page.screenshot({
-                path: `./recordings/${sessionName}-06-after-next.png`,
-                fullPage: true
-            });
+            await takeScreenshot(page, sessionName, '06-after-next');
         } else {
             throw new Error('❌ NEXT button not found');
         }
     } catch (error) {
         console.error('❌ Next button click failed:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-NEXT-ERROR.png`,
-            fullPage: true
-        });
+        await takeScreenshot(page, sessionName, 'NEXT-ERROR');
         throw error;
     }
 }
@@ -646,18 +635,12 @@ async function clickCheckout(page, sessionName) {
 
         for (const selector of selectors) {
             try {
-
                 const checkoutBtn = page.locator(selector).first();
 
                 if (await checkoutBtn.isVisible()) {
                     await checkoutBtn.click();
                     console.log(`✅ Successfully clicked Checkout using: ${selector}`);
-
-                    await page.screenshot({
-                        path: `./recordings/${sessionName}-08-checkout.png`,
-                        fullPage: true
-                    });
-
+                    await takeScreenshot(page, sessionName, '08-checkout');
                     return true;
                 }
             } catch (selectorError) {
@@ -686,17 +669,11 @@ async function addUsers(page, sessionName) {
             await addUsersBtn.click();
             console.log('✅ Clicked ADD USERS button');
 
-
             const addButtonClicked = await clickAddButton(page);
 
             if (addButtonClicked) {
                 console.log('✅ Users added successfully');
-
-                await page.screenshot({
-                    path: `./recordings/${sessionName}-07-users-added.png`,
-                    fullPage: true
-                });
-
+                await takeScreenshot(page, sessionName, '07-users-added');
                 return true;
             } else {
                 console.error('❌ Failed to click ADD button');
@@ -710,10 +687,7 @@ async function addUsers(page, sessionName) {
 
     } catch (error) {
         console.error('❌ Error adding users:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-ADD-USERS-ERROR.png`,
-            fullPage: true
-        });
+        await takeScreenshot(page, sessionName, 'ADD-USERS-ERROR');
         return false;
     }
 }
@@ -723,7 +697,6 @@ async function clickBook(page, sessionName) {
 
     try {
         const exactSelector = 'button.ui.button.primary.fluid.large';
-
         const bookBtn = page.locator(exactSelector).first();
 
         if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
@@ -732,12 +705,8 @@ async function clickBook(page, sessionName) {
                 await bookBtn.click();
                 console.log('🎉 Successfully clicked BOOK button - Booking Complete!');
 
-                await page.screenshot({
-                    path: `./recordings/${sessionName}-09-BOOKING-COMPLETE.png`,
-                    fullPage: true
-                });
-
-                await page.waitForTimeout(1000);
+                await takeScreenshot(page, sessionName, '09-BOOKING-COMPLETE');
+                await delay(1000);
                 return true;
             } else {
                 console.error('❌ Button found but does not contain "Book" text');
@@ -750,10 +719,7 @@ async function clickBook(page, sessionName) {
 
     } catch (error) {
         console.error('❌ Error clicking Book button:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-BOOK-ERROR.png`,
-            fullPage: true
-        });
+        await takeScreenshot(page, sessionName, 'BOOK-ERROR');
         return false;
     }
 }
@@ -774,7 +740,6 @@ async function clickSelectDateAndTime(page, sessionName) {
         for (const selector of selectors) {
             try {
                 console.log(`📋 Trying selector: ${selector}`);
-
                 const stepButton = page.locator(selector).first();
 
                 // Check if element exists and is visible
@@ -784,20 +749,14 @@ async function clickSelectDateAndTime(page, sessionName) {
                     const isEnabled = await stepButton.isEnabled();
                     console.log(`   📋 "Select date and time" - Visible: ${isVisible}, Enabled: ${isEnabled}`);
 
-                    // Human-like click with small delay
-                    await page.waitForTimeout(200 + Math.random() * 300);
+                    // Optimized click delay
+                    await delay(SPEED_MODE ? 100 : 200 + Math.random() * 300);
 
                     await stepButton.click();
                     console.log(`✅ Successfully clicked "Select date and time" using: ${selector}`);
 
-                    // Take screenshot after clicking
-                    await page.screenshot({
-                        path: `./recordings/${sessionName}-select-date-time-clicked.png`,
-                        fullPage: true
-                    });
-
-                    // Wait for any navigation or page updates
-                    await page.waitForTimeout(1000);
+                    await takeScreenshot(page, sessionName, 'select-date-time-clicked');
+                    await delay(SPEED_MODE ? 500 : 1000);
 
                     return true;
                 } else {
@@ -810,36 +769,12 @@ async function clickSelectDateAndTime(page, sessionName) {
         }
 
         console.error('❌ "Select date and time" button not found with any selector');
-
-        // Take debug screenshot
-        await page.screenshot({
-            path: `./recordings/${sessionName}-SELECT-DATE-TIME-NOT-FOUND.png`,
-            fullPage: true
-        });
-
-        // Log available stepper elements for debugging
-        console.log('🔍 Looking for any stepper-related elements...');
-        const stepperElements = await page.$$('[class*="stepper"], h2, .mb0');
-        for (let i = 0; i < Math.min(stepperElements.length, 10); i++) {
-            try {
-                const elementText = await stepperElements[i].textContent();
-                const elementClass = await stepperElements[i].getAttribute('class');
-                console.log(`   Stepper element ${i + 1}: "${elementText?.trim() || 'No text'}" (class: ${elementClass})`);
-            } catch (e) {
-                console.log(`   Stepper element ${i + 1}: Error reading properties`);
-            }
-        }
-
+        await takeScreenshot(page, sessionName, 'SELECT-DATE-TIME-NOT-FOUND');
         return false;
 
     } catch (error) {
         console.error('❌ Error clicking "Select date and time":', error.message);
-
-        await page.screenshot({
-            path: `./recordings/${sessionName}-SELECT-DATE-TIME-ERROR.png`,
-            fullPage: true
-        });
-
+        await takeScreenshot(page, sessionName, 'SELECT-DATE-TIME-ERROR');
         return false;
     }
 }
@@ -847,22 +782,27 @@ async function clickSelectDateAndTime(page, sessionName) {
 async function run() {
     console.time('⏱️ Total time');
     console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
+    console.log(`🚀 Speed mode: ${SPEED_MODE ? 'ON' : 'OFF'}`);
+    console.log(`📱 Environment: ${LOCAL_DEV ? 'Local Development' : 'GitHub Actions'}`);
+    console.log(`🎬 Recording: ${ENABLE_RECORDING ? 'Enabled' : 'GitHub Actions will handle'}`);
 
     const sessionName = createTimestampedFileName();
 
-    // Create recordings directory
-    try {
-        await mkdir('./recordings', { recursive: true });
-        console.log('📁 Created recordings directory');
-    } catch (err) {
-        if (err.code !== 'EEXIST') {
-            console.error('❌ Failed to create recordings directory:', err.message);
+    // Create minimal recordings directory (GitHub Actions will handle most recording)
+    if (LOCAL_DEV || ENABLE_RECORDING) {
+        try {
+            await mkdir('./recordings', { recursive: true });
+            console.log('📁 Created recordings directory');
+        } catch (err) {
+            if (err.code !== 'EEXIST') {
+                console.error('❌ Failed to create recordings directory:', err.message);
+            }
         }
     }
 
-    // Advanced stealth browser configuration
+    // Optimized browser configuration for GitHub Actions
     const browser = await chromium.launch({
-        headless: process.env.NODE_ENV === 'production', // Visible in dev, headless in production
+        headless: true, // Always headless for GitHub Actions
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -889,11 +829,22 @@ async function run() {
             '--use-mock-keychain',
             '--hide-scrollbars',
             '--mute-audio',
+            // Speed optimizations for GitHub Actions
+            ...(SPEED_MODE ? [
+                '--disable-images',
+                '--disable-javascript-harmony-shipping',
+                '--disable-background-networking',
+                '--disable-extensions',
+                '--disable-plugins',
+                '--fast-start',
+                '--aggressive-cache-discard',
+                '--memory-pressure-off'
+            ] : []),
             `--user-agent=${STEALTH_CONFIG.userAgent}`
         ]
     });
 
-    // Create stealth context with VIDEO RECORDING
+    // Create context WITHOUT local video recording (GitHub Actions handles this)
     const context = await browser.newContext({
         userAgent: STEALTH_CONFIG.userAgent,
         viewport: STEALTH_CONFIG.viewport,
@@ -905,23 +856,16 @@ async function run() {
         extraHTTPHeaders: {
             'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
-        },
-        // 🎬 VIDEO RECORDING
-        recordVideo: {
-            dir: './recordings/',
-            size: { width: 1440, height: 900 }
         }
+        // 🎬 NO LOCAL VIDEO RECORDING - GitHub Actions Playwright handles this automatically
     });
 
     const page = await context.newPage();
 
-    // Take initial screenshot
-    await page.screenshot({
-        path: `./recordings/${sessionName}-00-start.png`,
-        fullPage: true
-    });
+    // Only take initial screenshot if in local dev
+    await takeScreenshot(page, sessionName, '00-start');
 
-    // Advanced stealth JavaScript injection
+    // Advanced stealth JavaScript injection (unchanged)
     await page.addInitScript(() => {
         // Remove webdriver property
         Object.defineProperty(navigator, 'webdriver', {
@@ -1027,21 +971,24 @@ async function run() {
             await clickNext(page, sessionName);
             await addUsers(page, sessionName);
             await clickCheckout(page, sessionName);
-            await clickBook(page, sessionName);
+            const bookSuccess = await clickBook(page, sessionName);
 
-            if (page.url().includes('confirmation') || page.url().includes('success') || page.url() !== 'https://app.playbypoint.com' + BOOKING_URL) {
+            // Check for successful booking
+            const currentUrl = page.url();
+            if (bookSuccess || 
+                currentUrl.includes('confirmation') || 
+                currentUrl.includes('success') || 
+                currentUrl.includes('receipt') ||
+                currentUrl !== 'https://app.playbypoint.com' + BOOKING_URL) {
                 booked = true;
-                console.log('🎉 Booking confirmed! Redirected to confirmation page.');
+                console.log('🎉 Booking confirmed! Success detected.');
                 break;
-            }
-            
-            else {
+            } else {
                 await clickSelectDateAndTime(page, sessionName);
                 console.log('🔄 Getting another court');
                 continue;
             }
         }
-
 
         const bookingTime = Date.now() - bookingStart;
         console.log(`🏆 BOOKING COMPLETE! Total booking time: ${bookingTime}ms`);
@@ -1049,19 +996,14 @@ async function run() {
 
     } catch (err) {
         console.error('❌ Booking failed:', err.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-FINAL-ERROR.png`,
-            fullPage: true
-        });
+        await takeScreenshot(page, sessionName, 'FINAL-ERROR');
         throw err;
     } finally {
-        await delay(10000);
+        // Reduced delay for faster completion
+        await delay(SPEED_MODE ? 2000 : 10000);
 
         // Take final screenshot
-        await page.screenshot({
-            path: `./recordings/${sessionName}-99-end.png`,
-            fullPage: true
-        });
+        await takeScreenshot(page, sessionName, '99-end');
 
         await context.close();
         await browser.close();
