@@ -9,11 +9,11 @@ on:
       booking_hour:
         description: 'Booking hour (0-23)'
         required: false
-        default: '16'
+        default: '7'
       booking_minute:
         description: 'Booking minute (0-59)'
         required: false
-        default: '32'
+        default: '0'
       enable_recording:
         description: 'Enable video recording'
         type: boolean
