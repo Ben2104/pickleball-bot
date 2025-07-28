@@ -20,7 +20,7 @@ console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}**
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
+const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
 
 const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 19;
 const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 7;
@@ -358,7 +358,6 @@ async function selectTargetDate(page, sessionName) {
                 const name = (await nameEl.textContent()).trim();
                 const number = (await numberEl.textContent()).trim();
 
-                console.log(`Found date button: ${name} ${number}`);
 
                 if (name === dayName && number === dayNumber) {
                     // Human-like click with delay
@@ -461,7 +460,6 @@ async function clickNext(page, sessionName) {
         await next.waitFor({ timeout: 10000 });
         
         if (await next.isVisible() && await next.isEnabled()) {
-            await page.waitForTimeout(300 + Math.random() * 500);
             await next.click();
             console.log('✅ Clicked NEXT');
             
@@ -499,10 +497,8 @@ async function clickAddButton(page) {
                 const addBtn = page.locator(selector).first();
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
-                    await page.waitForTimeout(200 + Math.random() * 300);
                     await addBtn.click();
                     console.log(`✅ Successfully clicked ADD button using: ${selector}`);
-                    await page.waitForTimeout(230);
                     return true;
                 }
             } catch (selectorError) {
@@ -537,7 +533,6 @@ async function clickCheckout(page, sessionName) {
                 const checkoutBtn = page.locator(selector).first();
 
                 if (await checkoutBtn.isVisible()) {
-                    await page.waitForTimeout(300 + Math.random() * 400);
                     await checkoutBtn.click();
                     console.log(`✅ Successfully clicked Checkout using: ${selector}`);
                     
@@ -546,7 +541,6 @@ async function clickCheckout(page, sessionName) {
                         fullPage: true 
                     });
                     
-                    await page.waitForTimeout(500);
                     return true;
                 }
             } catch (selectorError) {
@@ -572,10 +566,9 @@ async function addUsers(page, sessionName) {
         await addUsersBtn.waitFor({ timeout: 10000 });
 
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
-            await page.waitForTimeout(400 + Math.random() * 600);
             await addUsersBtn.click();
             console.log('✅ Clicked ADD USERS button');
-            await page.waitForTimeout(200);
+        
 
             const addButtonClicked = await clickAddButton(page);
 
