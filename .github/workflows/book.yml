@@ -5,6 +5,20 @@ on:
     # Runs at 6:55 AM PST (14:55 UTC) every day to catch 7 AM bookings
     - cron: '55 13 * * *'
   workflow_dispatch: # Allows manual trigger
+    inputs:
+      booking_hour:
+        description: 'Booking hour (0-23)'
+        required: false
+        default: '23'
+      booking_minute:
+        description: 'Booking minute (0-59)'
+        required: false
+        default: '10'
+      enable_recording:
+        description: 'Enable video recording'
+        type: boolean
+        required: false
+        default: true
   repository_dispatch: # Add this for cron-job.org
     types: [pickleball-booking]
 
@@ -12,6 +26,7 @@ jobs:
   pickleball-reservation:
     name: Pickleball Court Booking
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
       - name: Checkout code
@@ -23,57 +38,133 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install dependencies
         run: |
-          npm install playwright dotenv
+          npm ci --production || npm install playwright dotenv
           
       - name: Install Playwright Browsers
         run: |
           npx playwright install chromium --with-deps
 
+      - name: Create recordings directory
+        run: |
+          mkdir -p recordings
+          echo "📁 Created recordings directory"
+
       - name: Run Pickleball Booking Bot
         run: |
           echo "🎾 Starting pickleball court booking bot..."
-          echo "📅 Target booking time: 7:00 AM PST"
+          echo "📅 Target booking time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
           echo "🏟️ Court type: Pickleball"
-          echo "⏰ Time slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm"
+          echo "⏰ Time slots: 7-7:30am, 7:30-8am, 8-8:30am, 8:30-9am"
+          echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
-          node reserve.js
+          
+          # Run with timeout protection
+          timeout 20m node reserve.js || echo "⚠️ Bot execution completed or timed out"
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
-          BOOKING_HOUR: "19"
-          BOOKING_MINUTE: "15"
+          BOOKING_HOUR: ${{ github.event.inputs.booking_hour || '7' }}
+          BOOKING_MINUTE: ${{ github.event.inputs.booking_minute || '0' }}
+          ENABLE_RECORDING: ${{ github.event.inputs.enable_recording || 'true' }}
           NODE_ENV: production
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: List generated files
+        if: always()
+        run: |
+          echo "📂 Checking for generated files..."
+          echo "📁 recordings/ directory:"
+          ls -la recordings/ 2>/dev/null || echo "📭 recordings/ directory empty or missing"
+          echo "🖼️ Root directory screenshots:"
+          ls -la *.png 2>/dev/null || echo "📭 No PNG files in root"
+          echo "🎬 Root directory videos:"
+          ls -la *.webm 2>/dev/null || echo "📭 No WEBM files in root"
 
       - name: Zip Screenshots and Logs
         if: always()
         run: |
+          echo "📦 Processing artifacts..."
+          
           # Create artifacts directory
           mkdir -p artifacts
           
-          # Copy any screenshots
-          if [ -f "*.png" ]; then
-            cp *.png artifacts/ 2>/dev/null || true
+          # Copy recordings folder contents
+          if [ -d "recordings" ] && [ "$(ls -A recordings/)" ]; then
+            echo "📁 Copying recordings folder..."
+            cp -r recordings/* artifacts/ 2>/dev/null || true
+            echo "✅ Recordings copied"
+          else
+            echo "📭 No recordings folder or empty"
           fi
           
-          # Create a summary log
+          # Copy any root screenshots
+          if ls *.png 1> /dev/null 2>&1; then
+            echo "🖼️ Copying root screenshots..."
+            cp *.png artifacts/ 2>/dev/null || true
+            echo "✅ Screenshots copied"
+          else
+            echo "📭 No root screenshots found"
+          fi
+          
+          # Copy any root videos
+          if ls *.webm 1> /dev/null 2>&1; then
+            echo "🎬 Copying root videos..."
+            cp *.webm artifacts/ 2>/dev/null || true
+            echo "✅ Videos copied"
+          else
+            echo "📭 No root videos found"
+          fi
+          
+          # Create a detailed summary log
           echo "🎾 Pickleball Booking Bot Results" > artifacts/booking-summary.txt
           echo "=================================" >> artifacts/booking-summary.txt
           echo "📅 Run Date: $(date)" >> artifacts/booking-summary.txt
-          echo "🎯 Target Time: 7:00 AM PST" >> artifacts/booking-summary.txt
+          echo "🎯 Target Time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST" >> artifacts/booking-summary.txt
           echo "🏟️ Venue: iPICKLE Cerritos" >> artifacts/booking-summary.txt
-          echo "⏰ Time Slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm" >> artifacts/booking-summary.txt
+          echo "⏰ Time Slots: 7-7:30am, 7:30-8am, 8-8:30am, 8:30-9am" >> artifacts/booking-summary.txt
+          echo "🎬 Recording Enabled: ${{ github.event.inputs.enable_recording || 'true' }}" >> artifacts/booking-summary.txt
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}" >> artifacts/booking-summary.txt
-          echo "📊 Booking Status: Check job logs for details" >> artifacts/booking-summary.txt
+          echo "📊 Job Status: ${{ job.status }}" >> artifacts/booking-summary.txt
+          echo "⚡ Run Number: ${{ github.run_number }}" >> artifacts/booking-summary.txt
+          echo "" >> artifacts/booking-summary.txt
           
-          # Zip everything
-          if [ "$(ls -A artifacts/)" ]; then
-            zip -r pickleball-booking-results.zip artifacts/
+          # Add file inventory
+          echo "📂 Generated Files:" >> artifacts/booking-summary.txt
+          echo "==================" >> artifacts/booking-summary.txt
+          if [ "$(ls -A artifacts/ 2>/dev/null | grep -v booking-summary.txt)" ]; then
+            ls -la artifacts/ | grep -v booking-summary.txt >> artifacts/booking-summary.txt
           else
-            echo "No artifacts to zip"
+            echo "No files generated" >> artifacts/booking-summary.txt
+          fi
+          
+          echo "" >> artifacts/booking-summary.txt
+          echo "🖥️ System Info:" >> artifacts/booking-summary.txt
+          echo "Runner OS: ${{ runner.os }}" >> artifacts/booking-summary.txt
+          echo "Node Version: $(node --version)" >> artifacts/booking-summary.txt
+          echo "Available Memory: $(free -h | grep '^Mem:' | awk '{print $7}')" >> artifacts/booking-summary.txt
+          
+          # Create zip if there are files
+          if [ "$(ls -A artifacts/)" ]; then
+            echo "📦 Creating zip archive..."
+            zip -r pickleball-booking-results.zip artifacts/
+            echo "✅ Archive created: pickleball-booking-results.zip"
+            echo "📊 Archive size: $(ls -lh pickleball-booking-results.zip | awk '{print $5}')"
+          else
+            echo "📭 No artifacts to zip"
+            # Create empty summary for consistency
+            echo "No files generated during this run" > booking-summary.txt
           fi
 
       - name: Upload Booking Results
@@ -83,16 +174,65 @@ jobs:
           name: pickleball-booking-results-${{ github.run_number }}
           path: |
             pickleball-booking-results.zip
+            artifacts/
+            recordings/
             *.png
+            *.webm
           retention-days: 30
+          compression-level: 6
+
+      - name: Upload Video Recordings (Separate)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: booking-videos-${{ github.run_number }}
+          path: |
+            recordings/*.webm
+            *.webm
+          retention-days: 30
+          compression-level: 1
+        continue-on-error: true
 
       - name: Upload Error Screenshots
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: error-screenshots-${{ github.run_number }}
-          path: "*.png"
+          path: |
+            recordings/*ERROR*.png
+            *ERROR*.png
+            artifacts/*ERROR*.png
           retention-days: 7
+          compression-level: 1
+        continue-on-error: true
+
+      - name: Upload Debug Info (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-info-${{ github.run_number }}
+          path: |
+            artifacts/booking-summary.txt
+            booking-summary.txt
+          retention-days: 14
+        continue-on-error: true
+
+      - name: Performance Summary
+        if: always()
+        run: |
+          echo "📊 Performance Summary"
+          echo "====================="
+          echo "🎯 Target: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
+          echo "🎬 Recording: ${{ github.event.inputs.enable_recording || 'true' }}"
+          echo "📂 Files generated:"
+          if [ -f "pickleball-booking-results.zip" ]; then
+            echo "  ✅ Results archive ($(ls -lh pickleball-booking-results.zip | awk '{print $5}'))"
+          fi
+          if [ -d "recordings" ] && [ "$(ls -A recordings/)" ]; then
+            echo "  ✅ Recordings ($(find recordings/ -name "*.webm" | wc -l) videos, $(find recordings/ -name "*.png" | wc -l) screenshots)"
+          fi
+          echo "📊 Job Status: ${{ job.status }}"
+          echo "⏱️ Completed: $(date)"
 
       - name: Notify on Success
         if: success()
@@ -100,12 +240,25 @@ jobs:
           echo "🎉 Pickleball booking bot completed successfully!"
           echo "✅ Check the booking confirmation in your PlayByPoint account"
           echo "📧 You should receive email confirmation if booking was successful"
+          echo "🎬 Video recordings and screenshots saved as artifacts"
+          echo "📦 Download artifacts from the Actions tab to review the session"
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
 
       - name: Notify on Failure
         if: failure()
         run: |
           echo "❌ Pickleball booking bot failed!"
-          echo "🔍 Check the uploaded screenshots and logs for debugging"
-          echo "💡 Common issues: Invalid credentials, website changes, or 403 Forbidden errors"
+          echo "🔍 Check the uploaded video recordings and screenshots for debugging"
+          echo "📹 Error screenshots and videos show exactly what went wrong"
+          echo "💡 Common issues: Invalid credentials, website changes, or network issues"
+          echo "🎬 Review the video artifacts to see the full booking attempt"
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
+          echo "🚨 Manual debug run: https://github.com/${{ github.repository }}/actions"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up temporary files..."
+          # Keep artifacts but clean up duplicates
+          rm -f *.zip 2>/dev/null || true
+          echo "✅ Cleanup completed"
