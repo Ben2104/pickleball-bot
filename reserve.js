@@ -846,6 +846,7 @@ async function clickSelectDateAndTime(page, sessionName) {
 
 async function run() {
     console.time('⏱️ Total time');
+    console.log('🚀 bot starts running at', new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
     console.log(`🎯 Bot configured for booking at ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST`);
 
     const sessionName = createTimestampedFileName();
