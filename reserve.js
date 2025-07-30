@@ -428,7 +428,8 @@ async function selectTimeSlots(page, sessionName) {
             const isEnabled = await btn.isEnabled();
 
             console.log(`   Button status - Visible: ${isVisible}, Enabled: ${isEnabled}`);
-
+            // set a 500ms timeout for the button to be clickable
+            await btn.waitFor({ state: 'visible', timeout: 500 });
             if (isVisible && isEnabled) {
                 // Fixed: Remove timeout from click - it's not a valid option
                 await btn.click();
