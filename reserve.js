@@ -417,25 +417,20 @@ async function selectCourtType(page, sessionName) {
 async function selectTimeSlots(page, sessionName) {
     console.log('🕒 Starting time slot selection...');
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     for (const time of TIME_SLOTS) {
         console.log(`🎯 Attempting to select: ${time}`);
         const btn = page.locator(`button:has-text("${time}")`).first();
 
         try {
-            const isVisible = await btn.isVisible();
-            const isEnabled = await btn.isEnabled();
-
-            console.log(`   Button status - Visible: ${isVisible}, Enabled: ${isEnabled}`);
-            // set a 500ms timeout for the button to be clickable
-            await btn.waitFor({ state: 'visible', timeout: 500 });
-            if (isVisible && isEnabled) {
-                // Fixed: Remove timeout from click - it's not a valid option
+            // Wait for the button to be visible and enabled before clicking
+            await btn.waitFor({ state: 'visible', timeout: 1000 });
+            if (await btn.isEnabled()) {
                 await btn.click();
                 console.log(`✅ Selected time slot: ${time}`);
             } else {
-                console.log(`❌ Not clickable: ${time}`);
+                console.log(`❌ Button for ${time} is visible but not enabled`);
             }
         } catch (err) {
             console.log(`❌ Not found or not clickable in time: ${time} - ${err.message}`);
@@ -1030,6 +1025,14 @@ async function run() {
             await addUsers(page, sessionName);
             await clickCheckout(page, sessionName);
             await clickBook(page, sessionName);
+
+            const alertMessage = await page.evaluate(() => {
+                const alertEl = document.querySelector('.ui.message.alert, .alert, .ui.message.error, .ui.message.warning');
+                return alertEl ? alertEl.textContent.trim() : null;
+            });
+            if (alertMessage) {
+                console.log(`🚨 ALERT: ${alertMessage}`);
+            }
 
             if (page.url().includes('confirmation') || page.url().includes('success') || page.url() !== 'https://app.playbypoint.com' + BOOKING_URL) {
                 booked = true;
