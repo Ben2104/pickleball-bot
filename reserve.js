@@ -20,10 +20,10 @@ console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}**
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
+const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
 
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 9;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 4;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -1018,6 +1018,7 @@ async function run() {
         const bookingStart = Date.now();
         const BOOKING_LOOP_TIMEOUT = 60 * 1000; // 60 seconds
 
+        let addUser = false;
         await selectTimeSlots(page, sessionName);
         while (true) {
             // Check if we've exceeded the timeout
@@ -1027,7 +1028,10 @@ async function run() {
 
             await selectCourtsByPriority(page, sessionName);
             await clickNext(page, sessionName);
-            await addUsers(page, sessionName);
+            if (!addUser) {
+                await addUsers(page, sessionName);
+                addUser = true;
+            }
             await clickCheckout(page, sessionName);
             await clickBook(page, sessionName);
 
