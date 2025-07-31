@@ -20,10 +20,10 @@ console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}**
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
+const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
 
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 9;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 13;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -417,20 +417,25 @@ async function selectCourtType(page, sessionName) {
 async function selectTimeSlots(page, sessionName) {
     console.log('🕒 Starting time slot selection...');
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
 
     for (const time of TIME_SLOTS) {
         console.log(`🎯 Attempting to select: ${time}`);
         const btn = page.locator(`button:has-text("${time}")`).first();
 
         try {
-            // Wait for the button to be visible and enabled before clicking
-            await btn.waitFor({ state: 'visible', timeout: 1000 });
-            if (await btn.isEnabled()) {
+            const isVisible = await btn.isVisible();
+            const isEnabled = await btn.isEnabled();
+
+            console.log(`   Button status - Visible: ${isVisible}, Enabled: ${isEnabled}`);
+            // set a 500ms timeout for the button to be clickable
+            await btn.waitFor({ state: 'visible', timeout: 500 });
+            if (isVisible && isEnabled) {
+                // Fixed: Remove timeout from click - it's not a valid option
                 await btn.click();
                 console.log(`✅ Selected time slot: ${time}`);
             } else {
-                console.log(`❌ Button for ${time} is visible but not enabled`);
+                console.log(`❌ Not clickable: ${time}`);
             }
         } catch (err) {
             console.log(`❌ Not found or not clickable in time: ${time} - ${err.message}`);
@@ -1013,9 +1018,8 @@ async function run() {
         const bookingStart = Date.now();
         const BOOKING_LOOP_TIMEOUT = 60 * 1000; // 60 seconds
 
-        let addUsersCalled = false;
         await selectTimeSlots(page, sessionName);
-        while (booked !== true) {
+        while (true) {
             // Check if we've exceeded the timeout
             if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
                 throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
@@ -1023,57 +1027,17 @@ async function run() {
 
             await selectCourtsByPriority(page, sessionName);
             await clickNext(page, sessionName);
-            if (!addUsersCalled) {
-                await addUsers(page, sessionName);
-                addUsersCalled = true;
-            }
+            await addUsers(page, sessionName);
             await clickCheckout(page, sessionName);
             await clickBook(page, sessionName);
 
-            const alertMessage = await page.evaluate(() => {
-                let msg = null;
-                window.alert = function (message) {
-                    msg = message;
-                };
-                // Trigger any alert on the page if present (if the site uses window.alert)
-                // But most sites use DOM elements for alerts, so also check for those:
-                const alertEl = document.querySelector('.ui.message.alert, .alert, .ui.message.error, .ui.message.warning');
-                if (alertEl) {
-                    msg = alertEl.textContent.trim();
-                }
-                return msg;
-            });
-            if (alertMessage) {
-                console.log(`🚨 ALERT: ${alertMessage}`);
+            if (page.url().includes('confirmation') || page.url().includes('success') || page.url() !== 'https://app.playbypoint.com' + BOOKING_URL) {
+                booked = true;
+                console.log('🎉 Booking confirmed! Redirected to confirmation page.');
+                break;
             }
-            // Detect booking confirmation via URL or redirect response
-            page.on('response', async (response) => {
-                const status = response.status();
-                if (status >= 300 && status < 400) {
-                    const location = response.headers()['location'];
-                    console.log(`Redirect detected: ${response.url()} → ${location}`);
-                    if (
-                        location &&
-                        (
-                            location.includes('confirmation') ||
-                            location.includes('success') ||
-                            location.startsWith('https://app.playbypoint.com/reservations/')
-                        )
-                    ) {
-                        booked = true;
-                        console.log('🎉 Booking confirmed by redirect!');
-                    }
-                }
-            });
-
-            // Listen for URL changes using popstate event
-            await page.evaluate(() => {
-                window.addEventListener('popstate', function (event) {
-                    console.log('URL changed to:', window.location.href);
-                });
-            });
-
-            if (!booked) {
+            
+            else {
                 await clickSelectDateAndTime(page, sessionName);
                 console.log('🔄 Getting another court');
                 continue;
