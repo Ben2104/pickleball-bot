@@ -1020,13 +1020,12 @@ async function run() {
 
         page.once('dialog', async dialog => {
             alertAppeared = true;
-            console.log('Alert:', dialog.message());
+            console.log('❌ Alert appeared:', dialog.message());
             await dialog.accept();
         });
-        await page.pause();
         let addUser = false;
         await selectTimeSlots(page, sessionName);
-        while (true) {
+        while (booked === false) {
             // Check if we've exceeded the timeout
             if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
                 throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
@@ -1041,13 +1040,13 @@ async function run() {
             await clickCheckout(page, sessionName);
             await clickBook(page, sessionName);
             console.log(alertAppeared ? '❌ Alert appeared' : '✅ No alert appeared');
-            if (page.url().includes('confirmation') || page.url().includes('success') || page.url() !== 'https://app.playbypoint.com' + BOOKING_URL) {
-                booked = true;
+            if (alertAppeared === false) {
                 console.log('🎉 Booking confirmed! Redirected to confirmation page.');
-                break;
+                booked = true;
             }
 
             else {
+                console.log('⚠️ Booking failed, retrying the process...');
                 await clickSelectDateAndTime(page, sessionName);
                 console.log('🔄 Getting another court');
                 continue;
