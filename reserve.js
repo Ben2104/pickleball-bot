@@ -1015,6 +1015,15 @@ async function run() {
         const bookingStart = Date.now();
         const BOOKING_LOOP_TIMEOUT = 60 * 1000; // 60 seconds
 
+        //listen for alert
+        let alertAppeared = false;
+
+        page.once('dialog', async dialog => {
+            alertAppeared = true;
+            console.log('Alert:', dialog.message());
+            await dialog.accept();
+        });
+        await page.pause();
         let addUser = false;
         await selectTimeSlots(page, sessionName);
         while (true) {
@@ -1031,13 +1040,13 @@ async function run() {
             }
             await clickCheckout(page, sessionName);
             await clickBook(page, sessionName);
-
+            console.log(alertAppeared ? '❌ Alert appeared' : '✅ No alert appeared');
             if (page.url().includes('confirmation') || page.url().includes('success') || page.url() !== 'https://app.playbypoint.com' + BOOKING_URL) {
                 booked = true;
                 console.log('🎉 Booking confirmed! Redirected to confirmation page.');
                 break;
             }
-            
+
             else {
                 await clickSelectDateAndTime(page, sessionName);
                 console.log('🔄 Getting another court');
