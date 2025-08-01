@@ -2,6 +2,7 @@
 import { chromium } from 'playwright';
 import dotenv from 'dotenv';
 import { mkdir } from 'fs/promises';
+import { count } from 'console';
 dotenv.config();
 
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
@@ -22,8 +23,8 @@ const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
 const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
 
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 9;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 4;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 19;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 1;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -419,29 +420,26 @@ async function selectTimeSlots(page, sessionName) {
 
     await page.waitForTimeout(2000);
 
-    for (const time of TIME_SLOTS) {
-        console.log(`🎯 Attempting to select: ${time}`);
+    let counter = 0;
+    let i = 0;
+    while (counter < TIME_SLOTS.length) {
+        const time = TIME_SLOTS[i];
         const btn = page.locator(`button:has-text("${time}")`).first();
-
         try {
             const isVisible = await btn.isVisible();
-            const isEnabled = await btn.isEnabled();
-
-            console.log(`   Button status - Visible: ${isVisible}, Enabled: ${isEnabled}`);
-            // set a 500ms timeout for the button to be clickable
-            await btn.waitFor({ state: 'visible', timeout: 500 });
-            if (isVisible && isEnabled) {
-                // Fixed: Remove timeout from click - it's not a valid option
+            console.log(`Time slot - Visible: ${isVisible}`);
+            if (isVisible) {
                 await btn.click();
-                console.log(`✅ Selected time slot: ${time}`);
+                counter++;
+                i++;
+                console.log(`✅ Selected time slot: ${time} (${counter}/${TIME_SLOTS.length})`);
             } else {
-                console.log(`❌ Not clickable: ${time}`);
+                continue;
             }
         } catch (err) {
-            console.log(`❌ Not found or not clickable in time: ${time} - ${err.message}`);
+            console.log(`❌ Error selecting time slot "${time}": ${err.message}`);
         }
     }
-
     await page.screenshot({
         path: `./recordings/${sessionName}-05-time-slots.png`,
         fullPage: true
@@ -510,7 +508,7 @@ async function selectCourtsByPriority(page, sessionName) {
                                 await page.waitForTimeout(100 + Math.random() * 200);
 
                                 await courtButton.click();
-                                console.log(`✅ Successfully selected ${courtName} (Priority ${priority}) - ONLY COURT SELECTED`);
+                                console.log(`✅ Successfully selected ${courtName}`);
                                 selectedCourt = courtName;
                                 courtSelected = true;
 
@@ -533,7 +531,7 @@ async function selectCourtsByPriority(page, sessionName) {
                 }
 
                 if (!courtSelected) {
-                    console.log(`   ❌ ${courtName} not found or not clickable, trying next priority...`);
+                    console.log(`   ❌ ${courtName} not found.`);
                 }
 
             } catch (courtError) {
@@ -545,7 +543,6 @@ async function selectCourtsByPriority(page, sessionName) {
         // Summary of selected court
         if (selectedCourt) {
             console.log(`🎉 Successfully selected court: ${selectedCourt}`);
-            console.log(`🏆 This was the highest priority available court`);
         } else {
             console.log('❌ No courts were available');
 
@@ -652,7 +649,7 @@ async function clickCheckout(page, sessionName) {
 
                 if (await checkoutBtn.isVisible()) {
                     await checkoutBtn.click();
-                    console.log(`✅ Successfully clicked Checkout using: ${selector}`);
+                    console.log(`✅ Successfully clicked Checkout`);
 
                     await page.screenshot({
                         path: `./recordings/${sessionName}-08-checkout.png`,
@@ -731,7 +728,7 @@ async function clickBook(page, sessionName) {
             const buttonText = await bookBtn.textContent();
             if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
                 await bookBtn.click();
-                console.log('🎉 Successfully clicked BOOK button - Booking Complete!');
+                console.log('🎉 Successfully clicked BOOK button');
 
                 await page.screenshot({
                     path: `./recordings/${sessionName}-09-BOOKING-COMPLETE.png`,
