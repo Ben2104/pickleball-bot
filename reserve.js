@@ -515,7 +515,7 @@ async function selectCourtsByPriority(page, sessionName) {
                                 // Exit immediately after selecting one court
                                 break;
                             } else {
-                                console.log(`   ⚠️ ${courtName} not available (disabled or already selected)`);
+                                console.log(`   ⚠️ ${courtName} not available`);
                             }
                         }
                     } catch (selectorError) {
