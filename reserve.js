@@ -23,8 +23,8 @@ const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
 const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
 
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 12;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 46;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -64,7 +64,7 @@ async function waitForCountdownToEnd(page) {
 
             const timeUntilTarget = targetTime - pstTime;
 
-            if (timeUntilTarget <= 5000 && timeUntilTarget >= 0) {
+            if (timeUntilTarget <= 1000 && timeUntilTarget >= 0) {
                 console.log(`✅ ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST reached! Starting booking...`);
                 return true;
             }
@@ -82,7 +82,7 @@ async function waitForCountdownToEnd(page) {
 
             try {
                 const timeSlotButton = await page.locator(`button:has-text("${TIME_SLOTS[0]}")`).isVisible({ timeout: 1000 });
-                if (timeSlotButton && timeUntilTarget <= 5000) {
+                if (timeSlotButton && timeUntilTarget <= 1000) {
                     console.log('✅ Time slot buttons are now available! Starting booking...');
                     return true;
                 }
