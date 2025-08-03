@@ -23,8 +23,8 @@ const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
 const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
 
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 13;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 23;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -132,10 +132,7 @@ async function login(page, sessionName) {
         console.log('📄 Login page loaded');
 
         // Take screenshot for debugging
-        await page.screenshot({
-            path: `./recordings/${sessionName}-01-login-page.png`,
-            fullPage: true
-        });
+
 
         // Check if we got blocked
         const pageContent = await page.content();
@@ -277,10 +274,7 @@ async function login(page, sessionName) {
         console.error('❌ Login failed:', error.message);
 
         try {
-            await page.screenshot({
-                path: `./recordings/${sessionName}-LOGIN-ERROR.png`,
-                fullPage: true
-            });
+
             const content = await page.content();
             console.log('📝 Page content preview:', content.substring(0, 1000));
         } catch (screenshotErr) {
@@ -314,18 +308,12 @@ async function goToBookingPage(page, sessionName) {
             page.click(selector)
         ]);
 
-        await page.screenshot({
-            path: `./recordings/${sessionName}-02-booking-page.png`,
-            fullPage: true
-        });
+
 
         console.log('✅ Navigated to booking page');
     } catch (error) {
         console.error('❌ Failed to navigate to booking page:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-BOOKING-PAGE-ERROR.png`,
-            fullPage: true
-        });
+
         throw error;
     }
 }
@@ -366,10 +354,7 @@ async function selectTargetDate(page, sessionName) {
                     await btn.click();
                     console.log(`✅ Selected date: ${dayName} ${dayNumber}`);
 
-                    await page.screenshot({
-                        path: `./recordings/${sessionName}-03-date-selected.png`,
-                        fullPage: true
-                    });
+
                     return;
                 }
             }
@@ -377,10 +362,7 @@ async function selectTargetDate(page, sessionName) {
         throw new Error(`❌ Could not find date: ${dayName} ${dayNumber}`);
     } catch (error) {
         console.error('❌ Date selection failed:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-DATE-ERROR.png`,
-            fullPage: true
-        });
+
         throw error;
     }
 }
@@ -398,19 +380,13 @@ async function selectCourtType(page, sessionName) {
             await courtButton.click();
             console.log(`✅ Selected court type: ${COURT_TYPE}`);
 
-            await page.screenshot({
-                path: `./recordings/${sessionName}-04-court-selected.png`,
-                fullPage: true
-            });
+
         } else {
             throw new Error(`❌ Court type button not available: ${COURT_TYPE}`);
         }
     } catch (error) {
         console.error('❌ Court type selection failed:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-COURT-ERROR.png`,
-            fullPage: true
-        });
+
         throw error;
     }
 }
@@ -440,10 +416,7 @@ async function selectTimeSlots(page, sessionName) {
             console.log(`❌ Error selecting time slot "${time}": ${err.message}`);
         }
     }
-    await page.screenshot({
-        path: `./recordings/${sessionName}-05-time-slots.png`,
-        fullPage: true
-    });
+
 
     console.log('⚡ Time slot selection complete');
 }
@@ -547,10 +520,7 @@ async function selectCourtsByPriority(page, sessionName) {
             console.log('❌ No courts were available');
 
             // Take debug screenshot if no courts selected
-            await page.screenshot({
-                path: `./recordings/${sessionName}-NO-COURTS-AVAILABLE-ERROR.png`,
-                fullPage: true
-            });
+
         }
 
         return selectedCourt; // Return single court name or null
@@ -558,10 +528,7 @@ async function selectCourtsByPriority(page, sessionName) {
     } catch (error) {
         console.error('❌ Court selection failed:', error.message);
 
-        await page.screenshot({
-            path: `./recordings/${sessionName}-COURT-SELECTION-ERROR.png`,
-            fullPage: true
-        });
+
 
         throw error;
     }
@@ -578,19 +545,13 @@ async function clickNext(page, sessionName) {
             await next.click();
             console.log('✅ Clicked NEXT');
 
-            await page.screenshot({
-                path: `./recordings/${sessionName}-06-after-next.png`,
-                fullPage: true
-            });
+
         } else {
             throw new Error('❌ NEXT button not found');
         }
     } catch (error) {
         console.error('❌ Next button click failed:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-NEXT-ERROR.png`,
-            fullPage: true
-        });
+
         throw error;
     }
 }
@@ -651,10 +612,7 @@ async function clickCheckout(page, sessionName) {
                     await checkoutBtn.click();
                     console.log(`✅ Successfully clicked Checkout`);
 
-                    await page.screenshot({
-                        path: `./recordings/${sessionName}-08-checkout.png`,
-                        fullPage: true
-                    });
+
 
                     return true;
                 }
@@ -690,10 +648,7 @@ async function addUsers(page, sessionName) {
             if (addButtonClicked) {
                 console.log('✅ Users added successfully');
 
-                await page.screenshot({
-                    path: `./recordings/${sessionName}-07-users-added.png`,
-                    fullPage: true
-                });
+
 
                 return true;
             } else {
@@ -708,10 +663,7 @@ async function addUsers(page, sessionName) {
 
     } catch (error) {
         console.error('❌ Error adding users:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-ADD-USERS-ERROR.png`,
-            fullPage: true
-        });
+
         return false;
     }
 }
@@ -730,10 +682,7 @@ async function clickBook(page, sessionName) {
                 await bookBtn.click();
                 console.log('🎉 Successfully clicked BOOK button');
 
-                await page.screenshot({
-                    path: `./recordings/${sessionName}-09-BOOKING-COMPLETE.png`,
-                    fullPage: true
-                });
+
 
                 await page.waitForTimeout(1000);
                 return true;
@@ -748,10 +697,7 @@ async function clickBook(page, sessionName) {
 
     } catch (error) {
         console.error('❌ Error clicking Book button:', error.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-BOOK-ERROR.png`,
-            fullPage: true
-        });
+
         return false;
     }
 }
@@ -789,10 +735,7 @@ async function clickSelectDateAndTime(page, sessionName) {
                     console.log(`✅ Successfully clicked "Select date and time" using: ${selector}`);
 
                     // Take screenshot after clicking
-                    await page.screenshot({
-                        path: `./recordings/${sessionName}-select-date-time-clicked.png`,
-                        fullPage: true
-                    });
+
 
                     // Wait for any navigation or page updates
                     await page.waitForTimeout(1000);
@@ -810,10 +753,7 @@ async function clickSelectDateAndTime(page, sessionName) {
         console.error('❌ "Select date and time" button not found with any selector');
 
         // Take debug screenshot
-        await page.screenshot({
-            path: `./recordings/${sessionName}-SELECT-DATE-TIME-NOT-FOUND.png`,
-            fullPage: true
-        });
+
 
         // Log available stepper elements for debugging
         console.log('🔍 Looking for any stepper-related elements...');
@@ -833,10 +773,7 @@ async function clickSelectDateAndTime(page, sessionName) {
     } catch (error) {
         console.error('❌ Error clicking "Select date and time":', error.message);
 
-        await page.screenshot({
-            path: `./recordings/${sessionName}-SELECT-DATE-TIME-ERROR.png`,
-            fullPage: true
-        });
+
 
         return false;
     }
@@ -915,10 +852,7 @@ async function run() {
     const page = await context.newPage();
 
     // Take initial screenshot
-    await page.screenshot({
-        path: `./recordings/${sessionName}-00-start.png`,
-        fullPage: true
-    });
+
 
     // Advanced stealth JavaScript injection
     await page.addInitScript(() => {
@@ -1018,13 +952,8 @@ async function run() {
         //listen for alert
         let alertAppeared = false;
 
-        page.once('dialog', async dialog => {
-            alertAppeared = true;
-            console.log('❌ Alert appeared:', dialog.message());
-            await dialog.accept();
-        });
 
-        await page.pause();
+
         let addUser = false;
         await selectTimeSlots(page, sessionName);
         while (booked === false) {
@@ -1040,7 +969,10 @@ async function run() {
                 addUser = true;
             }
             await clickCheckout(page, sessionName);
+
             await clickBook(page, sessionName);
+            await page.waitForTimeout(1000);
+
             console.log(alertAppeared ? '❌ Alert appeared' : '✅ No alert appeared');
             if (alertAppeared === false) {
                 console.log('🎉 Booking confirmed! Redirected to confirmation page.');
@@ -1048,6 +980,12 @@ async function run() {
             }
 
             else {
+                page.once('dialog', async dialog => {
+                    alertAppeared = true;
+                    console.log('Alert:', dialog.message());
+                    await dialog.accept();
+                });
+
                 console.log('⚠️ Booking failed, retrying the process...');
                 await clickSelectDateAndTime(page, sessionName);
                 console.log('🔄 Getting another court');
@@ -1062,19 +1000,13 @@ async function run() {
 
     } catch (err) {
         console.error('❌ Booking failed:', err.message);
-        await page.screenshot({
-            path: `./recordings/${sessionName}-FINAL-ERROR.png`,
-            fullPage: true
-        });
+
         throw err;
     } finally {
         await delay(10000);
 
         // Take final screenshot
-        await page.screenshot({
-            path: `./recordings/${sessionName}-99-end.png`,
-            fullPage: true
-        });
+
 
         await context.close();
         await browser.close();
