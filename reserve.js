@@ -23,8 +23,8 @@ const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
 const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
 
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 13;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 23;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -951,7 +951,13 @@ async function run() {
 
         //listen for alert
         let alertAppeared = false;
-
+        let lastDialogMessage = '';
+        page.once('dialog', async dialog => {
+            alertAppeared = true;
+            lastDialogMessage = dialog.message();
+            console.log('Alert:', lastDialogMessage);
+            await dialog.accept();
+        });
 
 
         let addUser = false;
@@ -971,20 +977,15 @@ async function run() {
             await clickCheckout(page, sessionName);
 
             await clickBook(page, sessionName);
-            await page.waitForTimeout(1000);
+            await page.waitForTimeout(2000);
 
-            console.log(alertAppeared ? '❌ Alert appeared' : '✅ No alert appeared');
+            console.log(alertAppeared ? '❌ Alert appeared: ' + lastDialogMessage : '✅ No alert appeared');
             if (alertAppeared === false) {
                 console.log('🎉 Booking confirmed! Redirected to confirmation page.');
                 booked = true;
             }
 
             else {
-                page.once('dialog', async dialog => {
-                    alertAppeared = true;
-                    console.log('Alert:', dialog.message());
-                    await dialog.accept();
-                });
 
                 console.log('⚠️ Booking failed, retrying the process...');
                 await clickSelectDateAndTime(page, sessionName);
