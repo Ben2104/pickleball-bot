@@ -10,7 +10,7 @@ on:
       booking_minute:
         description: 'Booking minute (0-59)'
         required: false
-        default: '46'
+        default: '53'
       enable_recording:
         description: 'Enable video recording'
         type: boolean
