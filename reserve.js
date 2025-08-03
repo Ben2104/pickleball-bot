@@ -2,7 +2,6 @@
 import { chromium } from 'playwright';
 import dotenv from 'dotenv';
 import { mkdir } from 'fs/promises';
-import { count } from 'console';
 dotenv.config();
 
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
@@ -21,7 +20,7 @@ console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}**
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
+const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
 
 const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
 const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
