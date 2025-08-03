@@ -977,7 +977,7 @@ async function run() {
             await clickCheckout(page, sessionName);
 
             await clickBook(page, sessionName);
-            await page.waitForTimeout(2000);
+            await page.waitForTimeout(1000);
 
             console.log(alertAppeared ? '❌ Alert appeared: ' + lastDialogMessage : '✅ No alert appeared');
             if (alertAppeared === false) {
