@@ -23,8 +23,8 @@ const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
 const TIME_SLOTS = ["7-7:30pm", "7:30-8pm", "8-8:30pm", "8:30-9pm"];
 
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 12;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 46;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
