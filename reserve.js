@@ -21,7 +21,7 @@ console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}**
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["7-7:30pm", "7:30-8pm", "8-8:30pm", "8:30-9pm"];
+const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
 
 const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
 const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
@@ -1023,6 +1023,8 @@ async function run() {
             console.log('❌ Alert appeared:', dialog.message());
             await dialog.accept();
         });
+
+        await page.pause();
         let addUser = false;
         await selectTimeSlots(page, sessionName);
         while (booked === false) {
