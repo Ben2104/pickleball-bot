@@ -88,9 +88,6 @@ jobs:
           echo "🎬 Root directory videos:"
           ls -la *.webm 2>/dev/null || echo "📭 No WEBM files in root"
 
-      - name: Zip Screenshots and Logs
-        if: always()
-        run: |
           echo "📦 Processing artifacts..."
           
           # Create artifacts directory
@@ -167,7 +164,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pickleball-booking-results-${{ github.run_number }}
+          name: kd-report
           path: |
             pickleball-booking-results.zip
             artifacts/
@@ -181,7 +178,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: booking-videos-${{ github.run_number }}
+          name: kd-screen-recording
           path: |
             recordings/*.webm
             *.webm
@@ -189,67 +186,7 @@ jobs:
           compression-level: 1
         continue-on-error: true
 
-      - name: Upload Error Screenshots
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: error-screenshots-${{ github.run_number }}
-          path: |
-            recordings/*ERROR*.png
-            *ERROR*.png
-            artifacts/*ERROR*.png
-          retention-days: 7
-          compression-level: 1
-        continue-on-error: true
 
-      - name: Upload Debug Info (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-info-${{ github.run_number }}
-          path: |
-            artifacts/booking-summary.txt
-            booking-summary.txt
-          retention-days: 14
-        continue-on-error: true
-
-      - name: Performance Summary
-        if: always()
-        run: |
-          echo "📊 Performance Summary"
-          echo "====================="
-          echo "🎯 Target: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
-          echo "🎬 Recording: ${{ github.event.inputs.enable_recording || 'true' }}"
-          echo "📂 Files generated:"
-          if [ -f "pickleball-booking-results.zip" ]; then
-            echo "  ✅ Results archive ($(ls -lh pickleball-booking-results.zip | awk '{print $5}'))"
-          fi
-          if [ -d "recordings" ] && [ "$(ls -A recordings/)" ]; then
-            echo "  ✅ Recordings ($(find recordings/ -name "*.webm" | wc -l) videos, $(find recordings/ -name "*.png" | wc -l) screenshots)"
-          fi
-          echo "📊 Job Status: ${{ job.status }}"
-          echo "⏱️ Completed: $(date)"
-
-      - name: Notify on Success
-        if: success()
-        run: |
-          echo "🎉 Pickleball booking bot completed successfully!"
-          echo "✅ Check the booking confirmation in your PlayByPoint account"
-          echo "📧 You should receive email confirmation if booking was successful"
-          echo "🎬 Video recordings and screenshots saved as artifacts"
-          echo "📦 Download artifacts from the Actions tab to review the session"
-          echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
-
-      - name: Notify on Failure
-        if: failure()
-        run: |
-          echo "❌ Pickleball booking bot failed!"
-          echo "🔍 Check the uploaded video recordings and screenshots for debugging"
-          echo "📹 Error screenshots and videos show exactly what went wrong"
-          echo "💡 Common issues: Invalid credentials, website changes, or network issues"
-          echo "🎬 Review the video artifacts to see the full booking attempt"
-          echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
-          echo "🚨 Manual debug run: https://github.com/${{ github.repository }}/actions"
 
       - name: Cleanup
         if: always()
