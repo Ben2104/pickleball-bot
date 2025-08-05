@@ -2,11 +2,14 @@
 import { chromium } from 'playwright';
 import dotenv from 'dotenv';
 import { mkdir } from 'fs/promises';
+import { google } from 'googleapis';
+import { readFileSync } from 'fs';
 dotenv.config();
 
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
 const password = process.env.PASSWORD ? String(process.env.PASSWORD).trim() : '';
-
+const credentialsFile = process.env.GITHUB_ACTIONS ? './service-account-key.json' : (process.env.CREDENTIALS_FILE || './credentials.json');
+const USER_NAME = process.env.USER_NAME || 'Khoi Do'; // default to Khoi if there is no USER set
 // Add validation here
 if (!email || !password) {
     console.error('❌ Missing required environment variables:');
@@ -20,21 +23,28 @@ console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}**
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
-let courtPriorityMap = new Map([
-    [0, "PICKLEBALL 2"],
-    [1, "PICKLEBALL 4"],
-    [2, "PICKLEBALL 8"],
-    [3, "PICKLEBALL 9"],
-    [4, "PICKLEBALL 3"],
-    [5, "PICKLEBALL 6"],
-    [6, "PICKLEBALL 7"],
-    [7, "PICKLEBALL 1"],
-    [8, "PICKLEBALL 5"],
-    [9, "PICKLEBALL 10"],
-]);
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 13;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 9;
+
+let TIME_SLOTS;
+let courtPriorityMap;
+
+if (USER_NAME === 'Khoi Do') {
+    TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
+    courtPriorityMap = new Map([
+        [0, "PICKLEBALL 2"],
+        [1, "PICKLEBALL 4"],
+        [2, "PICKLEBALL 8"],
+        [3, "PICKLEBALL 9"],
+        [4, "PICKLEBALL 3"],
+        [5, "PICKLEBALL 6"],
+        [6, "PICKLEBALL 7"],
+        [7, "PICKLEBALL 1"],
+        [8, "PICKLEBALL 5"],
+        [9, "PICKLEBALL 10"],
+    ]);
+}
+const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 14;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 39;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -46,7 +56,82 @@ const STEALTH_CONFIG = {
     permissions: ['geolocation'],
     geolocation: { latitude: 33.8703, longitude: -118.0895 }, // Cerritos, CA coordinates
 };
+// Function to parse time slots and get start/end times
+function parseTimeSlots(timeSlots) {
+    console.log('🕒 Parsing time slots:', timeSlots);
 
+    // Get first slot start time
+    const firstSlot = timeSlots[0]; // "7-7:30am"
+    const startTime = firstSlot.split('-')[0]; // "7"
+
+    // Get last slot end time
+    const lastSlot = timeSlots[timeSlots.length - 1]; // "8:30-9am"
+    const endTime = lastSlot.split('-')[1]; // "9am"
+
+    console.log('⏰ Start time:', startTime);
+    console.log('⏰ End time:', endTime);
+
+    return { startTime, endTime };
+}
+
+// Function to convert time string to 24-hour format
+function convertTo24Hour(timeStr) {
+    // Remove 'am' and handle cases like "7", "7:30", "9"
+    const cleanTime = timeStr.replace('am', '').trim();
+
+    if (cleanTime.includes(':')) {
+        return cleanTime + ':00'; // "7:30" -> "7:30:00"
+    } else {
+        return cleanTime + ':00:00'; // "7" -> "7:00:00", "9" -> "9:00:00"
+    }
+}
+
+const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(readFileSync(credentialsFile, 'utf-8')),
+    scopes: ['https://www.googleapis.com/auth/calendar'],
+});
+
+const calendar = google.calendar({ version: 'v3', auth });
+
+export async function addCalendarEvent(startDateTime, endDateTime) {
+    try {
+
+        console.log('🔍 Attempting to create event...');
+        console.log('Start time:', startDateTime);
+        console.log('End time:', endDateTime);
+
+        const event = {
+            summary: '🏓 Pickleball Reservation',
+            location: 'iPickle Cerritos',
+            description: 'Reserved by bot',
+            start: {
+                dateTime: startDateTime,
+                timeZone: 'America/Los_Angeles',
+            },
+            end: {
+                dateTime: endDateTime,
+                timeZone: 'America/Los_Angeles',
+            },
+        };
+
+        console.log('📅 Event object:', JSON.stringify(event, null, 2));
+
+        const response = await calendar.events.insert({
+            calendarId: CALENDAR_ID,
+            resource: event,
+        });
+
+        console.log('✅ Event added to calendar');
+        console.log('📋 Response:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('❌ Error adding event to calendar:');
+        console.error('Error message:', error.message);
+        console.error('Error code:', error.code);
+        console.error('Full error:', error);
+        throw error;
+    }
+}
 // Create timestamped filename for recordings
 function createTimestampedFileName() {
     const now = new Date();
@@ -412,7 +497,7 @@ async function selectTimeSlots(page, sessionName) {
             const isVisible = await btn.isVisible();
             console.log(`Time slot - Visible: ${isVisible}`);
             if (isVisible) {
-                await btn.click({timeout:100});
+                await btn.click({ timeout: 100 });
                 counter++;
                 i++;
                 console.log(`✅ Selected time slot: ${time} (${counter}/${TIME_SLOTS.length})`);
@@ -922,6 +1007,7 @@ async function run() {
     let booked = false;
     try {
         console.log('🚀 Phase 1: Setting up booking...');
+        console.log(`Start booking for ${USER_NAME}`);
         await login(page, sessionName);
         await goToBookingPage(page, sessionName);
         await page.waitForSelector('.day-container button', { timeout: 15000 });
@@ -968,6 +1054,25 @@ async function run() {
             console.log(alertAppeared ? '❌ Alert appeared: ' + lastDialogMessage : '✅ No alert appeared');
             if (alertAppeared === false) {
                 console.log('🎉 Booking confirmed! Redirected to confirmation page.');
+                const today = new Date();
+                today.setDate(today.getDate() + 7);
+                const formattedDate = today.toISOString().slice(0, 10); // YYYY-MM-DD
+                console.log('📅 Today:', today);
+
+                // Parse the time slots to get start and end times
+                const { startTime, endTime } = parseTimeSlots(TIME_SLOTS);
+
+                // Convert to 24-hour format and create ISO strings
+                const startHour = convertTo24Hour(startTime);
+                const endHour = convertTo24Hour(endTime);
+
+                const startDateTime = `${formattedDate}T${startHour}-07:00`;
+                const endDateTime = `${formattedDate}T${endHour}-07:00`;
+
+                console.log('🕐 Final start time:', startDateTime);
+                console.log('🕐 Final end time:', endDateTime);
+
+                await addCalendarEvent(startDateTime, endDateTime);
                 booked = true;
             }
 

@@ -69,6 +69,8 @@ jobs:
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          USER_NAME: Khoi Do
           BOOKING_HOUR: ${{ github.event.inputs.booking_hour || '7' }}
           BOOKING_MINUTE: ${{ github.event.inputs.booking_minute || '0' }}
           ENABLE_RECORDING: ${{ github.event.inputs.enable_recording || 'true' }}

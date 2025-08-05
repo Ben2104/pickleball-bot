@@ -4,6 +4,10 @@
 .env.production
 .env.test
 
+# Google credentials
+credentials.json
+service-account-key.json
+
 # Node modules
 node_modules/
 
@@ -13,6 +17,11 @@ npm-debug.log*
 
 # Screenshots from errors
 *.png
+
+# Bot generated files
+recordings/
+screenshots/
+artifacts/
 
 # OS generated files
 .DS_Store
