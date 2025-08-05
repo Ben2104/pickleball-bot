@@ -9,6 +9,7 @@ dotenv.config();
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
 const password = process.env.PASSWORD ? String(process.env.PASSWORD).trim() : '';
 const USER_NAME = process.env.USER_NAME || 'Khoi Do'; // default to Khoi if there is no USER set
+let selectedCourt = null;
 // Add validation here
 if (!email || !password) {
     console.error('❌ Missing required environment variables:');
@@ -158,7 +159,7 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
         const event = {
             summary: '🏓 Pickleball Reservation',
             location: 'iPickle Cerritos',
-            description: 'Reserved by bot',
+            description: `${USER_NAME}'s court,  court: ${selectedCourt}`,
             start: {
                 dateTime: startDateTime,
                 timeZone: 'America/Los_Angeles',
@@ -569,7 +570,6 @@ async function selectTimeSlots(page, sessionName) {
 async function selectCourtsByPriority(page, sessionName) {
     console.log('🏟️ Selecting ONE court by priority...');
 
-    let selectedCourt = null;
 
     try {
         // Wait for courts to be available
