@@ -551,7 +551,7 @@ async function selectTimeSlots(page, sessionName) {
             const isVisible = await btn.isVisible();
             console.log(`Time slot - Visible: ${isVisible}`);
             if (isVisible) {
-                await btn.click({ timeout: 100 });
+                await btn.click();
                 counter++;
                 i++;
                 console.log(`✅ Selected time slot: ${time} (${counter}/${TIME_SLOTS.length})`);
