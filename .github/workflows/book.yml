@@ -21,7 +21,7 @@ on:
 
 jobs:
   pickleball-reservation:
-    name: Pickleball Court Booking
+    name: Khoi Do
     runs-on: ubuntu-latest
 
     steps:
