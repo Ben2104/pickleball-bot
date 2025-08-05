@@ -8,7 +8,6 @@ dotenv.config();
 
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
 const password = process.env.PASSWORD ? String(process.env.PASSWORD).trim() : '';
-const credentialsFile = process.env.GITHUB_ACTIONS ? (process.env.GOOGLE_CREDENTIALS) : './credentials.json';
 const USER_NAME = process.env.USER_NAME || 'Khoi Do'; // default to Khoi if there is no USER set
 // Add validation here
 if (!email || !password) {
@@ -86,15 +85,71 @@ function convertTo24Hour(timeStr) {
     }
 }
 
-const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(readFileSync(credentialsFile, 'utf-8')),
-    scopes: ['https://www.googleapis.com/auth/calendar'],
-});
+// const auth = new google.auth.GoogleAuth({
+//     credentials: JSON.parse(readFileSync(credentialsFile, 'utf-8')),
+//     scopes: ['https://www.googleapis.com/auth/calendar'],
+// });
 
-const calendar = google.calendar({ version: 'v3', auth });
+// const calendar = google.calendar({ version: 'v3', auth });
+// Replace with this robust Google Auth setup:
+let auth;
+let calendar;
 
+try {
+    if (process.env.GOOGLE_CREDENTIALS) {
+        console.log('🔑 Using Google credentials from environment variable');
+
+        let credentials;
+        try {
+            credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+            console.log('✅ Google credentials JSON is valid');
+            console.log('📧 Service account email:', credentials.client_email);
+        } catch (jsonError) {
+            console.error('❌ Invalid JSON in GOOGLE_CREDENTIALS:', jsonError.message);
+            throw new Error('Invalid GOOGLE_CREDENTIALS JSON format');
+        }
+
+        auth = new google.auth.GoogleAuth({
+            credentials: credentials,
+            scopes: ['https://www.googleapis.com/auth/calendar'],
+        });
+
+    } else if (existsSync('./credentials.json')) {
+        console.log('🔑 Using Google credentials from file');
+        auth = new google.auth.GoogleAuth({
+            keyFile: './credentials.json',
+            scopes: ['https://www.googleapis.com/auth/calendar'],
+        });
+
+    } else {
+        console.log('⚠️ No Google credentials found - calendar integration will be skipped');
+        auth = null;
+    }
+
+    if (auth) {
+        calendar = google.calendar({ version: 'v3', auth });
+        console.log('✅ Google Calendar integration configured');
+    }
+
+} catch (error) {
+    console.error('❌ Error setting up Google Auth:', error.message);
+    auth = null;
+    calendar = null;
+}
 export async function addCalendarEvent(startDateTime, endDateTime) {
+    // Skip if no auth configured
+    if (!auth || !calendar) {
+        console.log('⚠️ Google Calendar not configured - skipping calendar integration');
+        return null;
+    }
+    
     try {
+        console.log('📅 Starting Google Calendar integration...');
+        console.log('🔑 Testing Google Calendar authentication...');
+        
+        // Test authentication first
+        const authClient = await auth.getClient();
+        console.log('✅ Authentication successful');
 
         console.log('🔍 Attempting to create event...');
         console.log('Start time:', startDateTime);
@@ -124,12 +179,11 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
         console.log('✅ Event added to calendar');
         console.log('📋 Response:', response.data);
         return response.data;
+        
     } catch (error) {
-        console.error('❌ Error adding event to calendar:');
-        console.error('Error message:', error.message);
-        console.error('Error code:', error.code);
-        console.error('Full error:', error);
-        throw error;
+        console.error('❌ Google Calendar integration failed:', error.message);
+        console.log('⚠️ Continuing without calendar integration...');
+        return null;
     }
 }
 // Create timestamped filename for recordings
