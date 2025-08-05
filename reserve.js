@@ -28,7 +28,7 @@ let TIME_SLOTS;
 let courtPriorityMap;
 
 if (USER_NAME === 'Khoi Do') {
-    TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
+    TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
     courtPriorityMap = new Map([
         [0, "PICKLEBALL 2"],
         [1, "PICKLEBALL 4"],
