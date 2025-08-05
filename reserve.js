@@ -20,10 +20,21 @@ console.log(`✅ Environment variables loaded. Email: ${email.substring(0, 3)}**
 
 const BOOKING_URL = '/book/ipicklecerritos';
 const COURT_TYPE = 'Pickleball';
-const TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
-
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
+const TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
+let courtPriorityMap = new Map([
+    [0, "PICKLEBALL 2"],
+    [1, "PICKLEBALL 4"],
+    [2, "PICKLEBALL 8"],
+    [3, "PICKLEBALL 9"],
+    [4, "PICKLEBALL 3"],
+    [5, "PICKLEBALL 6"],
+    [6, "PICKLEBALL 7"],
+    [7, "PICKLEBALL 1"],
+    [8, "PICKLEBALL 5"],
+    [9, "PICKLEBALL 10"],
+]);
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 13;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 9;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -348,8 +359,6 @@ async function selectTargetDate(page, sessionName) {
 
 
                 if (name === dayName && number === dayNumber) {
-                    // Human-like click with delay
-                    await page.waitForTimeout(300 + Math.random() * 500);
                     await btn.click();
                     console.log(`✅ Selected date: ${dayName} ${dayNumber}`);
 
@@ -421,19 +430,6 @@ async function selectTimeSlots(page, sessionName) {
 async function selectCourtsByPriority(page, sessionName) {
     console.log('🏟️ Selecting ONE court by priority...');
 
-    const courtPriorityMap = new Map([
-        [0, "PICKLEBALL 2"],
-        [1, "PICKLEBALL 4"],
-        [2, "PICKLEBALL 8"],
-        [3, "PICKLEBALL 9"],
-        [4, "PICKLEBALL 3"],
-        [5, "PICKLEBALL 6"],
-        [6, "PICKLEBALL 7"],
-        [7, "PICKLEBALL 1"],
-        [8, "PICKLEBALL 5"],
-        [9, "PICKLEBALL 10"],
-    ]);
-
     let selectedCourt = null;
 
     try {
@@ -481,10 +477,17 @@ async function selectCourtsByPriority(page, sessionName) {
                                 selectedCourt = courtName;
                                 courtSelected = true;
 
+                                // Remove the selected court from the map
+                                for (const [key, value] of courtPriorityMap.entries()) {
+                                    if (value === courtName) {
+                                        courtPriorityMap.delete(key);
+                                        break;
+                                    }
+                                }
                                 // Exit immediately after selecting one court
                                 break;
                             } else {
-                                console.log(`   ⚠️ ${courtName} not available`);
+                                console.log(`⚠️ ${courtName} not available`);
                             }
                         }
                     } catch (selectorError) {
@@ -514,18 +517,13 @@ async function selectCourtsByPriority(page, sessionName) {
             console.log(`🎉 Successfully selected court: ${selectedCourt}`);
         } else {
             console.log('❌ No courts were available');
-
-            // Take debug screenshot if no courts selected
-
+            throw err;
         }
 
         return selectedCourt; // Return single court name or null
 
     } catch (error) {
         console.error('❌ Court selection failed:', error.message);
-
-
-
         throw error;
     }
 }
