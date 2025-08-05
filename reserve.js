@@ -393,7 +393,6 @@ async function selectCourtType(page, sessionName) {
 async function selectTimeSlots(page, sessionName) {
     console.log('🕒 Starting time slot selection...');
 
-    await page.waitForTimeout(2000);
 
     let counter = 0;
     let i = 0;
@@ -404,7 +403,7 @@ async function selectTimeSlots(page, sessionName) {
             const isVisible = await btn.isVisible();
             console.log(`Time slot - Visible: ${isVisible}`);
             if (isVisible) {
-                await btn.click();
+                await btn.click({timeout:100});
                 counter++;
                 i++;
                 console.log(`✅ Selected time slot: ${time} (${counter}/${TIME_SLOTS.length})`);
@@ -466,7 +465,7 @@ async function selectCourtsByPriority(page, sessionName) {
                         const courtButton = page.locator(selector).first();
 
                         // Check if button exists and is visible
-                        const isVisible = await courtButton.isVisible({ timeout: 1000 });
+                        const isVisible = await courtButton.isVisible();
 
                         if (isVisible) {
                             const isEnabled = await courtButton.isEnabled();
@@ -477,8 +476,6 @@ async function selectCourtsByPriority(page, sessionName) {
                             // Check if court is available (not already selected or disabled)
                             if (isEnabled && !isSelected.includes('selected') && !isSelected.includes('disabled')) {
                                 // Human-like click with small delay
-                                await page.waitForTimeout(100 + Math.random() * 200);
-
                                 await courtButton.click();
                                 console.log(`✅ Successfully selected ${courtName}`);
                                 selectedCourt = courtName;
@@ -537,8 +534,6 @@ async function clickNext(page, sessionName) {
 
     try {
         const next = page.locator('button:has-text("Next")').first();
-        // Fixed: Proper timeout for waitFor
-        await next.waitFor({ timeout: 10000 });
 
         if (await next.isVisible() && await next.isEnabled()) {
             await next.click();
@@ -568,12 +563,11 @@ async function clickAddButton(page) {
 
         for (const selector of selectors) {
             try {
-                await page.waitForSelector(selector, { timeout: 2000 });
                 const addBtn = page.locator(selector).first();
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
                     await addBtn.click();
-                    console.log(`✅ Successfully clicked ADD button using: ${selector}`);
+                    console.log(`✅ Successfully clicked ADD button`);
                     return true;
                 }
             } catch (selectorError) {
@@ -680,10 +674,6 @@ async function clickBook(page, sessionName) {
             if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
                 await bookBtn.click();
                 console.log('🎉 Successfully clicked BOOK button');
-
-
-
-                await page.waitForTimeout(1000);
                 return true;
             } else {
                 console.error('❌ Button found but does not contain "Book" text');
@@ -721,14 +711,13 @@ async function clickSelectDateAndTime(page, sessionName) {
                 const stepButton = page.locator(selector).first();
 
                 // Check if element exists and is visible
-                const isVisible = await stepButton.isVisible({ timeout: 2000 });
+                const isVisible = await stepButton.isVisible();
 
                 if (isVisible) {
                     const isEnabled = await stepButton.isEnabled();
                     console.log(`   📋 "Select date and time" - Visible: ${isVisible}, Enabled: ${isEnabled}`);
 
                     // Human-like click with small delay
-                    await page.waitForTimeout(200 + Math.random() * 300);
 
                     await stepButton.click();
                     console.log(`✅ Successfully clicked "Select date and time" using: ${selector}`);
