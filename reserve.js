@@ -1103,7 +1103,7 @@ async function run() {
 
         let addUser = false;
         await selectTimeSlots(page, sessionName);
-        while (booked === false && courtPriorityMap.size > 0) {
+        while (booked === false) {
             // Check if we've exceeded the timeout
             if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
                 throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
