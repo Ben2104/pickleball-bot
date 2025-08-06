@@ -99,13 +99,6 @@ jobs:
 
 
 
-      - name: Cleanup
-        if: always()
-        run: |
-          echo "🧹 Cleaning up temporary files..."
-          # Keep artifacts but clean up duplicates
-          rm -f *.zip 2>/dev/null || true
-          echo "✅ Cleanup completed"
   Marvin-job:
     name: Marvin
     runs-on: ubuntu-latest
@@ -119,7 +112,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-
 
       - name: Install dependencies
         run: |
@@ -139,13 +131,16 @@ jobs:
           echo "🎾 Starting pickleball court booking bot..."
           echo "📅 Target booking time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
           echo "🏟️ Court type: Pickleball"
+          echo "⏰ Time slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm"
           echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
           
+          # Run with timeout protection
+          timeout 20m node reserve.js || echo "⚠️ Bot execution completed or timed out"
         env:
           EMAIL: ${{ secrets.EMAIL2 }}
           PASSWORD: ${{ secrets.PASSWORD2 }}
-          USER_NAME: Marvin
+          USER_NAME: Khoi Do
           BOOKING_HOUR: ${{ github.event.inputs.booking_hour || '7' }}
           BOOKING_MINUTE: ${{ github.event.inputs.booking_minute || '0' }}
           ENABLE_RECORDING: ${{ github.event.inputs.enable_recording || 'true' }}
@@ -154,7 +149,6 @@ jobs:
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
           NODE_OPTIONS: "--max-old-space-size=4096"
-
 
       - name: Upload Booking Results
         if: always()
@@ -183,11 +177,3 @@ jobs:
         continue-on-error: true
 
 
-
-      - name: Cleanup
-        if: always()
-        run: |
-          echo "🧹 Cleaning up temporary files..."
-          # Keep artifacts but clean up duplicates
-          rm -f *.zip 2>/dev/null || true
-          echo "✅ Cleanup completed"
