@@ -158,11 +158,11 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
         console.log('⚠️ Google Calendar not configured - skipping calendar integration');
         return null;
     }
-    
+
     try {
         console.log('📅 Starting Google Calendar integration...');
         console.log('🔑 Testing Google Calendar authentication...');
-        
+
         // Test authentication first
         const authClient = await auth.getClient();
         console.log('✅ Authentication successful');
@@ -195,7 +195,7 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
         console.log('✅ Event added to calendar');
         console.log('📋 Response:', response.data);
         return response.data;
-        
+
     } catch (error) {
         console.error('❌ Google Calendar integration failed:', error.message);
         console.log('⚠️ Continuing without calendar integration...');
@@ -1103,7 +1103,7 @@ async function run() {
 
         let addUser = false;
         await selectTimeSlots(page, sessionName);
-        while (booked === false) {
+        while (booked === false && courtPriorityMap.size > 0) {
             // Check if we've exceeded the timeout
             if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
                 throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
@@ -1121,8 +1121,10 @@ async function run() {
             await page.waitForTimeout(1000);
 
             console.log(alertAppeared ? '❌ Alert appeared: ' + lastDialogMessage : '✅ No alert appeared');
-            if (alertAppeared === false) {
-                console.log('🎉 Booking confirmed! Redirected to confirmation page.');
+            let confirmationNumber = await page.$eval(selectors.confirmationNumber, el => el.textContent)
+            
+            if (confirmationNumber) {
+                console.log(`Booking confirmed! Here's the confirmation number: ${confirmationNumber?.trim()}`)
                 const today = new Date();
                 today.setDate(today.getDate() + 7);
                 const formattedDate = today.toISOString().slice(0, 10); // YYYY-MM-DD
@@ -1143,10 +1145,7 @@ async function run() {
 
                 await addCalendarEvent(startDateTime, endDateTime);
                 booked = true;
-            }
-
-            else {
-
+            } else {
                 console.log('⚠️ Booking failed, retrying the process...');
                 await clickSelectDateAndTime(page, sessionName);
                 console.log('🔄 Getting another court');
@@ -1158,7 +1157,7 @@ async function run() {
         const bookingTime = Date.now() - bookingStart;
         console.log(`🏆 BOOKING COMPLETE! Total booking time: ${bookingTime}ms`);
         console.log('✅ Booking flow complete');
-
+        await page.waitForTimeout(5000)
     } catch (err) {
         console.error('❌ Booking failed:', err.message);
 
