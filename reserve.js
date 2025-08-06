@@ -58,8 +58,8 @@ else if (USER_NAME === 'Marvin') {
     ]);
 }
 const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 10;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 28;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -658,6 +658,13 @@ async function selectCourtsByPriority(page, sessionName) {
 
                 if (!courtSelected) {
                     console.log(`   ❌ ${courtName} not found.`);
+                    // Remove the court from the map if not found
+                    for (const [key, value] of courtPriorityMap.entries()) {
+                        if (value === courtName) {
+                            courtPriorityMap.delete(key);
+                            break;
+                        }
+                    }
                 }
 
             } catch (courtError) {
@@ -1073,7 +1080,6 @@ async function run() {
         };
     });
 
-    let booked = false;
     try {
         console.log('🚀 Phase 1: Setting up booking...');
         console.log(`Start booking for ${USER_NAME}`);
@@ -1096,76 +1102,80 @@ async function run() {
         page.once('dialog', async dialog => {
             alertAppeared = true;
             lastDialogMessage = dialog.message();
-            console.log('Alert:', lastDialogMessage);
             await dialog.accept();
         });
 
 
         let addUser = false;
         await selectTimeSlots(page, sessionName);
-        while (booked === false) {
+        // let confirmationCount = await page.locator("//div[text()='Confirmation Number']/following-sibling::div").count();;
+        let count = 0;
+        try {
+            while (courtPriorityMap.size > 0) {
             // Check if we've exceeded the timeout
             if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
                 throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
             }
 
+            // If alert appeared, log and continue loop
+            if (alertAppeared) {
+                console.log(`⚠️ Alert appeared: ${lastDialogMessage}`);
+                alertAppeared = false; // reset for next iteration
+            }
+            // Select a different court by priority
             await selectCourtsByPriority(page, sessionName);
+            // Click Next to proceed
             await clickNext(page, sessionName);
             if (!addUser) {
                 await addUsers(page, sessionName);
                 addUser = true;
             }
+            // Go to checkout
             await clickCheckout(page, sessionName);
-
+            // BOOK
             await clickBook(page, sessionName);
             await page.waitForTimeout(1000);
 
-            console.log(alertAppeared ? '❌ Alert appeared: ' + lastDialogMessage : '✅ No alert appeared');
-            let confirmationNumber = await page.$eval(selectors.confirmationNumber, el => el.textContent)
-            
-            if (confirmationNumber) {
-                console.log(`Booking confirmed! Here's the confirmation number: ${confirmationNumber?.trim()}`)
-                const today = new Date();
-                today.setDate(today.getDate() + 7);
-                const formattedDate = today.toISOString().slice(0, 10); // YYYY-MM-DD
-                console.log('📅 Today:', today);
-
-                // Parse the time slots to get start and end times
-                const { startTime, endTime } = parseTimeSlots(TIME_SLOTS);
-
-                // Convert to 24-hour format and create ISO strings
-                const startHour = convertTo24Hour(startTime);
-                const endHour = convertTo24Hour(endTime);
-
-                const startDateTime = `${formattedDate}T${startHour}-07:00`;
-                const endDateTime = `${formattedDate}T${endHour}-07:00`;
-
-                console.log('🕐 Final start time:', startDateTime);
-                console.log('🕐 Final end time:', endDateTime);
-
-                await addCalendarEvent(startDateTime, endDateTime);
-                booked = true;
-            } else {
-                console.log('⚠️ Booking failed, retrying the process...');
-                await clickSelectDateAndTime(page, sessionName);
-                console.log('🔄 Getting another court');
-                continue;
+            await clickSelectDateAndTime(page, sessionName);
+            count++;
+            continue;
             }
+        } catch {
+            console.log("Booking may have worked, checking for true error");
         }
 
 
+        // After booking loop is complete and booking is confirmed
         const bookingTime = Date.now() - bookingStart;
+        // let confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim());
+        // console.log(`Booking confirmed! Here's the confirmation number: ${confirmationNumber?.trim()}`)
         console.log(`🏆 BOOKING COMPLETE! Total booking time: ${bookingTime}ms`);
         console.log('✅ Booking flow complete');
-        await page.waitForTimeout(5000)
+        const today = new Date();
+        today.setDate(today.getDate() + 7);
+        const formattedDate = today.toISOString().slice(0, 10); // YYYY-MM-DD
+
+        // Parse the time slots to get start and end times
+        const { startTime, endTime } = parseTimeSlots(TIME_SLOTS);
+
+        // Convert to 24-hour format and create ISO strings
+        const startHour = convertTo24Hour(startTime);
+        const endHour = convertTo24Hour(endTime);
+
+        const startDateTime = `${formattedDate}T${startHour}-07:00`;
+        const endDateTime = `${formattedDate}T${endHour}-07:00`;
+
+        console.log('🕐 Final start time:', startDateTime);
+        console.log('🕐 Final end time:', endDateTime);
+
+        await addCalendarEvent(startDateTime, endDateTime);
+        await page.waitForTimeout(5000);
     } catch (err) {
         console.error('❌ Booking failed:', err.message);
 
         throw err;
     } finally {
         await delay(10000);
-
-        // Take final screenshot
 
 
         await context.close();
