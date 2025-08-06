@@ -28,7 +28,7 @@ let TIME_SLOTS;
 let courtPriorityMap;
 
 if (USER_NAME === 'Khoi Do') {
-    TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
+    TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
     courtPriorityMap = new Map([
         [0, "PICKLEBALL 2"],
         [1, "PICKLEBALL 4"],
@@ -43,14 +43,14 @@ if (USER_NAME === 'Khoi Do') {
     ]);
 }
 else if (USER_NAME === 'Marvin') {
-    TIME_SLOTS = ["7:30-8am", "8-8:30am", "8:30-9am", "9-9:30am"];
+    TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
         [0, "PICKLEBALL 5"],
         [1, "PICKLEBALL 10"],
-        [2, "PICKLEBALL 8"],
+        [2, "PICKLEBALL 6"],
         [3, "PICKLEBALL 9"],
         [4, "PICKLEBALL 3"],
-        [5, "PICKLEBALL 6"],
+        [5, "PICKLEBALL 8"],
         [6, "PICKLEBALL 7"],
         [7, "PICKLEBALL 1"],
         [8, "PICKLEBALL 2"],
@@ -58,8 +58,8 @@ else if (USER_NAME === 'Marvin') {
     ]);
 }
 const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 10;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 28;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 15;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 5;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
@@ -593,7 +593,11 @@ async function selectCourtsByPriority(page, sessionName) {
         console.log('🎯 Starting court selection by priority (selecting ONLY ONE court)...');
 
         // Iterate through courts by priority (0 = highest priority)
-        for (let priority = 0; priority < courtPriorityMap.size; priority++) {
+        while (courtPriorityMap.size > 0) {
+            // Get the lowest priority key (smallest number)
+            const priorities = Array.from(courtPriorityMap.keys()).sort((a, b) => a - b);
+            if (priorities.length === 0) break;
+            const priority = priorities[0];
             const courtName = courtPriorityMap.get(priority);
             console.log(`🏟️ Priority ${priority}: Checking ${courtName}...`);
 
