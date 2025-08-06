@@ -1109,36 +1109,34 @@ async function run() {
         let addUser = false;
         await selectTimeSlots(page, sessionName);
         // let confirmationCount = await page.locator("//div[text()='Confirmation Number']/following-sibling::div").count();;
-        let count = 0;
         try {
             while (courtPriorityMap.size > 0) {
-            // Check if we've exceeded the timeout
-            if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
-                throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
-            }
+                // Check if we've exceeded the timeout
+                if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
+                    throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
+                }
 
-            // If alert appeared, log and continue loop
-            if (alertAppeared) {
-                console.log(`⚠️ Alert appeared: ${lastDialogMessage}`);
-                alertAppeared = false; // reset for next iteration
-            }
-            // Select a different court by priority
-            await selectCourtsByPriority(page, sessionName);
-            // Click Next to proceed
-            await clickNext(page, sessionName);
-            if (!addUser) {
-                await addUsers(page, sessionName);
-                addUser = true;
-            }
-            // Go to checkout
-            await clickCheckout(page, sessionName);
-            // BOOK
-            await clickBook(page, sessionName);
-            await page.waitForTimeout(1000);
+                // If alert appeared, log and continue loop
+                if (alertAppeared) {
+                    console.log(`⚠️ Alert appeared: ${lastDialogMessage}`);
+                    alertAppeared = false; // reset for next iteration
+                }
+                // Select a different court by priority
+                await selectCourtsByPriority(page, sessionName);
+                // Click Next to proceed
+                await clickNext(page, sessionName);
+                if (!addUser) {
+                    await addUsers(page, sessionName);
+                    addUser = true;
+                }
+                // Go to checkout
+                await clickCheckout(page, sessionName);
+                // BOOK
+                await clickBook(page, sessionName);
+                await page.waitForTimeout(1000);
 
-            await clickSelectDateAndTime(page, sessionName);
-            count++;
-            continue;
+                await clickSelectDateAndTime(page, sessionName);
+                continue;
             }
         } catch {
             console.log("Booking may have worked, checking for true error");
@@ -1147,29 +1145,34 @@ async function run() {
 
         // After booking loop is complete and booking is confirmed
         const bookingTime = Date.now() - bookingStart;
-        // let confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim());
-        // console.log(`Booking confirmed! Here's the confirmation number: ${confirmationNumber?.trim()}`)
-        console.log(`🏆 BOOKING COMPLETE! Total booking time: ${bookingTime}ms`);
-        console.log('✅ Booking flow complete');
-        const today = new Date();
-        today.setDate(today.getDate() + 7);
-        const formattedDate = today.toISOString().slice(0, 10); // YYYY-MM-DD
+        let confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim());
+        if (confirmationNumber) {
+            console.log(`Booking confirmed! Here's the confirmation number: ${confirmationNumber?.trim()}`)
+            console.log(`🏆 BOOKING COMPLETE! Total booking time: ${bookingTime}ms`);
+            console.log('✅ Booking flow complete');
+            const today = new Date();
+            today.setDate(today.getDate() + 7);
+            const formattedDate = today.toISOString().slice(0, 10); // YYYY-MM-DD
 
-        // Parse the time slots to get start and end times
-        const { startTime, endTime } = parseTimeSlots(TIME_SLOTS);
+            // Parse the time slots to get start and end times
+            const { startTime, endTime } = parseTimeSlots(TIME_SLOTS);
 
-        // Convert to 24-hour format and create ISO strings
-        const startHour = convertTo24Hour(startTime);
-        const endHour = convertTo24Hour(endTime);
+            // Convert to 24-hour format and create ISO strings
+            const startHour = convertTo24Hour(startTime);
+            const endHour = convertTo24Hour(endTime);
 
-        const startDateTime = `${formattedDate}T${startHour}-07:00`;
-        const endDateTime = `${formattedDate}T${endHour}-07:00`;
+            const startDateTime = `${formattedDate}T${startHour}-07:00`;
+            const endDateTime = `${formattedDate}T${endHour}-07:00`;
 
-        console.log('🕐 Final start time:', startDateTime);
-        console.log('🕐 Final end time:', endDateTime);
+            console.log('🕐 Final start time:', startDateTime);
+            console.log('🕐 Final end time:', endDateTime);
 
-        await addCalendarEvent(startDateTime, endDateTime);
-        await page.waitForTimeout(5000);
+            await addCalendarEvent(startDateTime, endDateTime);
+            await page.waitForTimeout(5000);
+        }
+        else {
+            throw new Error('Booking failed: Confirmation number not found');
+        }
     } catch (err) {
         console.error('❌ Booking failed:', err.message);
 
