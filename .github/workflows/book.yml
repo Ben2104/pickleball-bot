@@ -10,7 +10,7 @@ on:
       booking_minute:
         description: 'Booking minute (0-59)'
         required: false
-        default: '0'
+        default: '20'
       enable_recording:
         description: 'Enable video recording'
         type: boolean
@@ -34,21 +34,13 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
       - name: Install dependencies
         run: |
-          npm ci --production || npm install playwright dotenv
+          npm install
           
       - name: Install Playwright Browsers
         run: |
-          npx playwright install chromium --with-deps
+          npx playwright install
 
       - name: Create recordings directory
         run: |
@@ -78,89 +70,6 @@ jobs:
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
           NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: List generated files
-        if: always()
-        run: |
-          echo "📂 Checking for generated files..."
-          echo "📁 recordings/ directory:"
-          ls -la recordings/ 2>/dev/null || echo "📭 recordings/ directory empty or missing"
-          echo "🖼️ Root directory screenshots:"
-          ls -la *.png 2>/dev/null || echo "📭 No PNG files in root"
-          echo "🎬 Root directory videos:"
-          ls -la *.webm 2>/dev/null || echo "📭 No WEBM files in root"
-
-          echo "📦 Processing artifacts..."
-          
-          # Create artifacts directory
-          mkdir -p artifacts
-          
-          # Copy recordings folder contents
-          if [ -d "recordings" ] && [ "$(ls -A recordings/)" ]; then
-            echo "📁 Copying recordings folder..."
-            cp -r recordings/* artifacts/ 2>/dev/null || true
-            echo "✅ Recordings copied"
-          else
-            echo "📭 No recordings folder or empty"
-          fi
-          
-          # Copy any root screenshots
-          if ls *.png 1> /dev/null 2>&1; then
-            echo "🖼️ Copying root screenshots..."
-            cp *.png artifacts/ 2>/dev/null || true
-            echo "✅ Screenshots copied"
-          else
-            echo "📭 No root screenshots found"
-          fi
-          
-          # Copy any root videos
-          if ls *.webm 1> /dev/null 2>&1; then
-            echo "🎬 Copying root videos..."
-            cp *.webm artifacts/ 2>/dev/null || true
-            echo "✅ Videos copied"
-          else
-            echo "📭 No root videos found"
-          fi
-          
-          # Create a detailed summary log
-          echo "🎾 Pickleball Booking Bot Results" > artifacts/booking-summary.txt
-          echo "=================================" >> artifacts/booking-summary.txt
-          echo "📅 Run Date: $(date)" >> artifacts/booking-summary.txt
-          echo "🎯 Target Time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST" >> artifacts/booking-summary.txt
-          echo "🏟️ Venue: iPICKLE Cerritos" >> artifacts/booking-summary.txt
-          echo "⏰ Time Slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm" >> artifacts/booking-summary.txt
-          echo "🎬 Recording Enabled: ${{ github.event.inputs.enable_recording || 'true' }}" >> artifacts/booking-summary.txt
-          echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}" >> artifacts/booking-summary.txt
-          echo "📊 Job Status: ${{ job.status }}" >> artifacts/booking-summary.txt
-          echo "⚡ Run Number: ${{ github.run_number }}" >> artifacts/booking-summary.txt
-          echo "" >> artifacts/booking-summary.txt
-          
-          # Add file inventory
-          echo "📂 Generated Files:" >> artifacts/booking-summary.txt
-          echo "==================" >> artifacts/booking-summary.txt
-          if [ "$(ls -A artifacts/ 2>/dev/null | grep -v booking-summary.txt)" ]; then
-            ls -la artifacts/ | grep -v booking-summary.txt >> artifacts/booking-summary.txt
-          else
-            echo "No files generated" >> artifacts/booking-summary.txt
-          fi
-          
-          echo "" >> artifacts/booking-summary.txt
-          echo "🖥️ System Info:" >> artifacts/booking-summary.txt
-          echo "Runner OS: ${{ runner.os }}" >> artifacts/booking-summary.txt
-          echo "Node Version: $(node --version)" >> artifacts/booking-summary.txt
-          echo "Available Memory: $(free -h | grep '^Mem:' | awk '{print $7}')" >> artifacts/booking-summary.txt
-          
-          # Create zip if there are files
-          if [ "$(ls -A artifacts/)" ]; then
-            echo "📦 Creating zip archive..."
-            zip -r pickleball-booking-results.zip artifacts/
-            echo "✅ Archive created: pickleball-booking-results.zip"
-            echo "📊 Archive size: $(ls -lh pickleball-booking-results.zip | awk '{print $5}')"
-          else
-            echo "📭 No artifacts to zip"
-            # Create empty summary for consistency
-            echo "No files generated during this run" > booking-summary.txt
-          fi
 
       - name: Upload Booking Results
         if: always()
@@ -211,21 +120,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
 
       - name: Install dependencies
         run: |
-          npm ci --production || npm install playwright dotenv
+          npm install
           
       - name: Install Playwright Browsers
         run: |
-          npx playwright install chromium --with-deps
+          npx playwright install
 
       - name: Create recordings directory
         run: |
@@ -240,8 +142,6 @@ jobs:
           echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
           
-          # Run with timeout protection
-          timeout 20m node reserve.js || echo "⚠️ Bot execution completed or timed out"
         env:
           EMAIL: ${{ secrets.EMAIL2 }}
           PASSWORD: ${{ secrets.PASSWORD2 }}
@@ -255,88 +155,6 @@ jobs:
           TZ: America/Los_Angeles
           NODE_OPTIONS: "--max-old-space-size=4096"
 
-      - name: List generated files
-        if: always()
-        run: |
-          echo "📂 Checking for generated files..."
-          echo "📁 recordings/ directory:"
-          ls -la recordings/ 2>/dev/null || echo "📭 recordings/ directory empty or missing"
-          echo "🖼️ Root directory screenshots:"
-          ls -la *.png 2>/dev/null || echo "📭 No PNG files in root"
-          echo "🎬 Root directory videos:"
-          ls -la *.webm 2>/dev/null || echo "📭 No WEBM files in root"
-
-          echo "📦 Processing artifacts..."
-          
-          # Create artifacts directory
-          mkdir -p artifacts
-          
-          # Copy recordings folder contents
-          if [ -d "recordings" ] && [ "$(ls -A recordings/)" ]; then
-            echo "📁 Copying recordings folder..."
-            cp -r recordings/* artifacts/ 2>/dev/null || true
-            echo "✅ Recordings copied"
-          else
-            echo "📭 No recordings folder or empty"
-          fi
-          
-          # Copy any root screenshots
-          if ls *.png 1> /dev/null 2>&1; then
-            echo "🖼️ Copying root screenshots..."
-            cp *.png artifacts/ 2>/dev/null || true
-            echo "✅ Screenshots copied"
-          else
-            echo "📭 No root screenshots found"
-          fi
-          
-          # Copy any root videos
-          if ls *.webm 1> /dev/null 2>&1; then
-            echo "🎬 Copying root videos..."
-            cp *.webm artifacts/ 2>/dev/null || true
-            echo "✅ Videos copied"
-          else
-            echo "📭 No root videos found"
-          fi
-          
-          # Create a detailed summary log
-          echo "🎾 Pickleball Booking Bot Results" > artifacts/booking-summary.txt
-          echo "=================================" >> artifacts/booking-summary.txt
-          echo "📅 Run Date: $(date)" >> artifacts/booking-summary.txt
-          echo "🎯 Target Time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST" >> artifacts/booking-summary.txt
-          echo "🏟️ Venue: iPICKLE Cerritos" >> artifacts/booking-summary.txt
-          echo "⏰ Time Slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm" >> artifacts/booking-summary.txt
-          echo "🎬 Recording Enabled: ${{ github.event.inputs.enable_recording || 'true' }}" >> artifacts/booking-summary.txt
-          echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}" >> artifacts/booking-summary.txt
-          echo "📊 Job Status: ${{ job.status }}" >> artifacts/booking-summary.txt
-          echo "⚡ Run Number: ${{ github.run_number }}" >> artifacts/booking-summary.txt
-          echo "" >> artifacts/booking-summary.txt
-          
-          # Add file inventory
-          echo "📂 Generated Files:" >> artifacts/booking-summary.txt
-          echo "==================" >> artifacts/booking-summary.txt
-          if [ "$(ls -A artifacts/ 2>/dev/null | grep -v booking-summary.txt)" ]; then
-            ls -la artifacts/ | grep -v booking-summary.txt >> artifacts/booking-summary.txt
-          else
-            echo "No files generated" >> artifacts/booking-summary.txt
-          fi
-          
-          echo "" >> artifacts/booking-summary.txt
-          echo "🖥️ System Info:" >> artifacts/booking-summary.txt
-          echo "Runner OS: ${{ runner.os }}" >> artifacts/booking-summary.txt
-          echo "Node Version: $(node --version)" >> artifacts/booking-summary.txt
-          echo "Available Memory: $(free -h | grep '^Mem:' | awk '{print $7}')" >> artifacts/booking-summary.txt
-          
-          # Create zip if there are files
-          if [ "$(ls -A artifacts/)" ]; then
-            echo "📦 Creating zip archive..."
-            zip -r pickleball-booking-results.zip artifacts/
-            echo "✅ Archive created: pickleball-booking-results.zip"
-            echo "📊 Archive size: $(ls -lh pickleball-booking-results.zip | awk '{print $5}')"
-          else
-            echo "📭 No artifacts to zip"
-            # Create empty summary for consistency
-            echo "No files generated during this run" > booking-summary.txt
-          fi
 
       - name: Upload Booking Results
         if: always()
