@@ -10,7 +10,7 @@ on:
       booking_minute:
         description: 'Booking minute (0-59)'
         required: false
-        default: '29'
+        default: '0'
       enable_recording:
         description: 'Enable video recording'
         type: boolean
@@ -52,7 +52,6 @@ jobs:
           echo "🎾 Starting pickleball court booking bot..."
           echo "📅 Target booking time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
           echo "🏟️ Court type: Pickleball"
-          echo "⏰ Time slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm"
           echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
           
@@ -131,7 +130,6 @@ jobs:
           echo "🎾 Starting pickleball court booking bot..."
           echo "📅 Target booking time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
           echo "🏟️ Court type: Pickleball"
-          echo "⏰ Time slots: 8-8:30pm, 8:30-9pm, 9-9:30pm, 9:30-10pm"
           echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
           echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
           
@@ -140,7 +138,7 @@ jobs:
         env:
           EMAIL: ${{ secrets.EMAIL2 }}
           PASSWORD: ${{ secrets.PASSWORD2 }}
-          USER_NAME: Khoi Do
+          USER_NAME: Marvin
           BOOKING_HOUR: ${{ github.event.inputs.booking_hour || '7' }}
           BOOKING_MINUTE: ${{ github.event.inputs.booking_minute || '0' }}
           ENABLE_RECORDING: ${{ github.event.inputs.enable_recording || 'true' }}
