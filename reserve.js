@@ -43,7 +43,7 @@ if (USER_NAME === 'Khoi Do') {
     ]);
 }
 else if (USER_NAME === 'Marvin') {
-    TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
+    TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
         [0, "PICKLEBALL 5"],
         [1, "PICKLEBALL 10"],
@@ -58,8 +58,8 @@ else if (USER_NAME === 'Marvin') {
     ]);
 }
 const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 14;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 39;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
