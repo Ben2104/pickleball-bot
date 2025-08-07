@@ -58,8 +58,8 @@ else if (USER_NAME === 'Marvin') {
     ]);
 }
 const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
-const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 15;
-const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 5;
+const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
+const BOOKING_MINUTE = parseInt(process.env.BOOKING_MINUTE) || 0;
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Stealth configuration
