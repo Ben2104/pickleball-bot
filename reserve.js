@@ -9,6 +9,9 @@ dotenv.config();
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
 const password = process.env.PASSWORD ? String(process.env.PASSWORD).trim() : '';
 const USER_NAME = process.env.USER_NAME || 'Khoi Do'; // default to Khoi if there is no USER set
+const hr = "(//div[contains(@class,'Countdown')]//td)[1]";
+const min = "(//div[contains(@class,'Countdown')]//td)[3]";
+const sec = "(//div[contains(@class,'Countdown')]//td)[5]";
 let selectedCourt = null;
 // Add validation here
 if (!email || !password) {
@@ -235,56 +238,38 @@ function createTimestampedFileName() {
     return `booking-session-${timestamp}`;
 }
 
+// Use these selectors in waitForCountdownToEnd instead of creating your own time logic
 async function waitForCountdownToEnd(page) {
     console.log(`⏰ Waiting for countdown to reach ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
 
     while (true) {
         try {
-            const now = new Date();
-            const pstTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
-            const currentHour = pstTime.getHours();
-            const currentMinute = pstTime.getMinutes();
-            const currentSecond = pstTime.getSeconds();
+            // Wait for countdown elements to appear
+            await page.waitForSelector(hr, { timeout: 10000 });
+            await page.waitForSelector(min, { timeout: 10000 });
+            await page.waitForSelector(sec, { timeout: 10000 });
 
-            const targetTime = new Date(pstTime);
-            targetTime.setHours(BOOKING_HOUR, BOOKING_MINUTE, 0, 0);
+            // Get countdown values from the page
+            const [hourStr, minStr, secStr] = await Promise.all([
+                page.$eval(hr, el => el.textContent.trim()),
+                page.$eval(min, el => el.textContent.trim()),
+                page.$eval(sec, el => el.textContent.trim())
+            ]);
 
-            if (pstTime >= targetTime) {
-                targetTime.setDate(targetTime.getDate() + 1);
-            }
+            const hours = parseInt(hourStr, 10) || 0;
+            const minutes = parseInt(minStr, 10) || 0;
+            const seconds = parseInt(secStr, 10) || 0;
 
-            const timeUntilTarget = targetTime - pstTime;
+            console.log(`Time remaining: ${hours}:${minutes}:${seconds}s`);
 
-            if (timeUntilTarget <= 1000 && timeUntilTarget >= 0) {
-                console.log(`✅ ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST reached! Starting booking...`);
+            // If countdown is zero, proceed
+            if (hours === 0 && minutes === 0 && seconds === 0) {
                 return true;
             }
 
-            const totalSeconds = Math.floor(timeUntilTarget / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-
-            console.log(`⏳ Current PST: ${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')} - Time until ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')}: ${hours}h ${minutes}m ${seconds}s`);
-
-            if (timeUntilTarget > 23 * 60 * 60 * 1000) {
-                console.log('⚠️ Booking time is more than 23 hours away. Check your BOOKING_HOUR setting.');
-            }
-
-            try {
-                const timeSlotButton = await page.locator(`button:has-text("${TIME_SLOTS[0]}")`).isVisible({ timeout: 1000 });
-                if (timeSlotButton && timeUntilTarget <= 1000) {
-                    console.log('✅ Time slot buttons are now available! Starting booking...');
-                    return true;
-                }
-            } catch (e) {
-                // Ignore timeout errors when checking for buttons
-            }
-
             await delay(1000);
-
         } catch (error) {
-            console.log('⚠️ Error checking time:', error.message);
+            console.log('⚠️ Error reading countdown:', error.message);
             await delay(1000);
         }
     }
