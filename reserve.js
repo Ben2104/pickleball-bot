@@ -47,14 +47,14 @@ else if (USER_NAME === 'Marvin') {
     courtPriorityMap = new Map([
         [0, "PICKLEBALL 5"],
         [1, "PICKLEBALL 10"],
-        [2, "PICKLEBALL 6"],
-        [3, "PICKLEBALL 9"],
-        [4, "PICKLEBALL 3"],
-        [5, "PICKLEBALL 8"],
-        [6, "PICKLEBALL 7"],
-        [7, "PICKLEBALL 1"],
-        [8, "PICKLEBALL 2"],
-        [9, "PICKLEBALL 4"],
+        [2, "PICKLEBALL 7"],
+        [3, "PICKLEBALL 2"],
+        [4, "PICKLEBALL 8"],
+        [5, "PICKLEBALL 4"],
+        [6, "PICKLEBALL 1"],
+        [7, "PICKLEBALL 6"],
+        [8, "PICKLEBALL 3"],
+        [9, "PICKLEBALL 9"],
     ]);
 }
 const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
