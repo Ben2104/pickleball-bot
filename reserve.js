@@ -220,7 +220,6 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
         });
 
         console.log('✅ Event added to calendar');
-        console.log('📋 Response:', response.data);
         return response.data;
 
     } catch (error) {
@@ -592,7 +591,6 @@ async function selectTimeSlots(page, sessionName) {
         const btn = page.locator(`button:has-text("${time}")`).first();
         try {
             const isVisible = await btn.isVisible();
-            console.log(`Time slot - Visible: ${isVisible}`);
             if (isVisible) {
                 await btn.click();
                 counter++;
@@ -617,7 +615,6 @@ async function selectCourtsByPriority(page, sessionName) {
         // Wait for courts to be available
         await page.waitForTimeout(500);
 
-        console.log('🎯 Starting court selection by priority (selecting ONLY ONE court)...');
 
         // Iterate through courts by priority (0 = highest priority)
         while (courtPriorityMap.size > 0) {
@@ -626,7 +623,6 @@ async function selectCourtsByPriority(page, sessionName) {
             if (priorities.length === 0) break;
             const priority = priorities[0];
             const courtName = courtPriorityMap.get(priority);
-            console.log(`🏟️ Priority ${priority}: Checking ${courtName}...`);
 
             try {
                 // Multiple selector strategies for court buttons
@@ -650,9 +646,7 @@ async function selectCourtsByPriority(page, sessionName) {
 
                         if (isVisible) {
                             const isEnabled = await courtButton.isEnabled();
-                            const isSelected = await courtButton.getAttribute('class') || '';
-
-                            console.log(`   📋 ${courtName} - Visible: ${isVisible}, Enabled: ${isEnabled}`);
+                            const isSelected = await courtButton.getAttribute('class') || '';;
 
                             // Check if court is available (not already selected or disabled)
                             if (isEnabled && !isSelected.includes('selected') && !isSelected.includes('disabled')) {
@@ -720,16 +714,12 @@ async function selectCourtsByPriority(page, sessionName) {
     }
 }
 async function clickNext(page, sessionName) {
-    console.log('⏭️ Clicking Next...');
 
     try {
         const next = page.locator('button:has-text("Next")').first();
 
         if (await next.isVisible() && await next.isEnabled()) {
             await next.click();
-            console.log('✅ Clicked NEXT');
-
-
         } else {
             throw new Error('❌ NEXT button not found');
         }
@@ -757,7 +747,6 @@ async function clickAddButton(page) {
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
                     await addBtn.click();
-                    console.log(`✅ Successfully clicked ADD button`);
                     return true;
                 }
             } catch (selectorError) {
@@ -776,7 +765,6 @@ async function clickAddButton(page) {
 }
 
 async function clickCheckout(page, sessionName) {
-    console.log('🛒 Looking for Checkout button...');
 
     try {
         const selectors = [
@@ -793,10 +781,6 @@ async function clickCheckout(page, sessionName) {
 
                 if (await checkoutBtn.isVisible()) {
                     await checkoutBtn.click();
-                    console.log(`✅ Successfully clicked Checkout`);
-
-
-
                     return true;
                 }
             } catch (selectorError) {
@@ -823,16 +807,9 @@ async function addUsers(page, sessionName) {
 
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
             await addUsersBtn.click();
-            console.log('✅ Clicked ADD USERS button');
-
-
             const addButtonClicked = await clickAddButton(page);
 
             if (addButtonClicked) {
-                console.log('✅ Users added successfully');
-
-
-
                 return true;
             } else {
                 console.error('❌ Failed to click ADD button');
@@ -852,7 +829,6 @@ async function addUsers(page, sessionName) {
 }
 
 async function clickBook(page, sessionName) {
-    console.log('📋 Looking for Book button...');
 
     try {
         const exactSelector = 'button.ui.button.primary.fluid.large';
@@ -863,7 +839,6 @@ async function clickBook(page, sessionName) {
             const buttonText = await bookBtn.textContent();
             if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
                 await bookBtn.click();
-                console.log('🎉 Successfully clicked BOOK button');
                 return true;
             } else {
                 console.error('❌ Button found but does not contain "Book" text');
@@ -882,7 +857,6 @@ async function clickBook(page, sessionName) {
 }
 
 async function clickSelectDateAndTime(page, sessionName) {
-    console.log('📅 Looking for "Select date and time" step...');
 
     try {
         const selectors = [
@@ -896,7 +870,6 @@ async function clickSelectDateAndTime(page, sessionName) {
 
         for (const selector of selectors) {
             try {
-                console.log(`📋 Trying selector: ${selector}`);
 
                 const stepButton = page.locator(selector).first();
 
@@ -904,17 +877,7 @@ async function clickSelectDateAndTime(page, sessionName) {
                 const isVisible = await stepButton.isVisible();
 
                 if (isVisible) {
-                    const isEnabled = await stepButton.isEnabled();
-                    console.log(`   📋 "Select date and time" - Visible: ${isVisible}, Enabled: ${isEnabled}`);
-
-                    // Human-like click with small delay
-
                     await stepButton.click();
-                    console.log(`✅ Successfully clicked "Select date and time" using: ${selector}`);
-
-                    // Take screenshot after clicking
-
-
                     // Wait for any navigation or page updates
                     await page.waitForTimeout(1000);
 
