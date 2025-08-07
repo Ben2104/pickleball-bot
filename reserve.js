@@ -73,32 +73,59 @@ const STEALTH_CONFIG = {
 };
 // Function to parse time slots and get start/end times
 function parseTimeSlots(timeSlots) {
-    console.log('🕒 Parsing time slots:', timeSlots);
-
-    // Get first slot start time
-    const firstSlot = timeSlots[0]; // "7-7:30am"
-    const startTime = firstSlot.split('-')[0]; // "7"
-
-    // Get last slot end time
-    const lastSlot = timeSlots[timeSlots.length - 1]; // "8:30-9am"
-    const endTime = lastSlot.split('-')[1]; // "9am"
-
-    console.log('⏰ Start time:', startTime);
-    console.log('⏰ End time:', endTime);
-
-    return { startTime, endTime };
+  console.log('🕒 Parsing time slots:', timeSlots);
+  
+  // Get first slot start time - need to preserve AM/PM from the slot
+  const firstSlot = timeSlots[0]; // "7-7:30pm"
+  const startTime = firstSlot.split('-')[0]; // "7"
+  
+  // Get last slot end time
+  const lastSlot = timeSlots[timeSlots.length - 1]; // "8:30-9pm"  
+  const endTime = lastSlot.split('-')[1]; // "9pm"
+  
+  // For start time, we need to infer AM/PM from the slot
+  // If the slot contains 'pm', the start time should also be 'pm'
+  // If the slot contains 'am', the start time should also be 'am'
+  let startTimeWithPeriod = startTime;
+  if (firstSlot.includes('pm')) {
+    startTimeWithPeriod = startTime + 'pm';
+  } else if (firstSlot.includes('am')) {
+    startTimeWithPeriod = startTime + 'am';
+  }
+  
+  console.log('⏰ Start time:', startTimeWithPeriod);
+  console.log('⏰ End time:', endTime);
+  
+  return { startTime: startTimeWithPeriod, endTime };
 }
 
 // Function to convert time string to 24-hour format
 function convertTo24Hour(timeStr) {
-    // Remove 'am' and handle cases like "7", "7:30", "9"
-    const cleanTime = timeStr.replace('am', '').trim();
-
-    if (cleanTime.includes(':')) {
-        return cleanTime + ':00'; // "7:30" -> "7:30:00"
-    } else {
-        return cleanTime + ':00:00'; // "7" -> "7:00:00", "9" -> "9:00:00"
-    }
+  const isPM = timeStr.includes('pm');
+  const isAM = timeStr.includes('am');
+  
+  // Remove 'am' or 'pm' and handle cases like "7", "7:30", "9"
+  const cleanTime = timeStr.replace(/(am|pm)/g, '').trim();
+  
+  let hour, minute;
+  
+  if (cleanTime.includes(':')) {
+    [hour, minute] = cleanTime.split(':');
+  } else {
+    hour = cleanTime;
+    minute = '00';
+  }
+  
+  // Convert to 24-hour format
+  let hour24 = parseInt(hour);
+  
+  if (isPM && hour24 !== 12) {
+    hour24 += 12;
+  } else if (isAM && hour24 === 12) {
+    hour24 = 0;
+  }
+  
+  return `${hour24.toString().padStart(2, '0')}:${minute}:00`;
 }
 
 // const auth = new google.auth.GoogleAuth({
