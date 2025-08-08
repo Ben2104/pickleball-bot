@@ -260,7 +260,7 @@ async function waitForCountdownToEnd(page) {
             const minutes = parseInt(minStr, 10) || 0;
             const seconds = parseInt(secStr, 10) || 0;
 
-            console.log(`Time remaining: ${hours}:${minutes}:${seconds}s`);
+            console.log(`Time remaining: ${hours}:${minutes}:${seconds}`);
 
             // If countdown is zero, proceed
             if (hours === 0 && minutes === 0 && seconds === 0) {
