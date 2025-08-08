@@ -9,6 +9,7 @@ dotenv.config();
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
 const password = process.env.PASSWORD ? String(process.env.PASSWORD).trim() : '';
 const USER_NAME = process.env.USER_NAME || 'Khoi Do'; // default to Khoi if there is no USER set
+
 let selectedCourt = null;
 // Add validation here
 if (!email || !password) {
