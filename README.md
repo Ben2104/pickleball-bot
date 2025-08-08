@@ -16,26 +16,13 @@ Due to the high demand for court reservations at iPickle Cerritos, it’s extrem
 - 🥇 **Smart Court Selection**: Books courts based on a **quality priority system**—trying the best courts first.
 - ✅ **One-Time Try**: Will retry after the first attempt—ensuring no duplicate or excessive requests.
 - 📷 **Recording**: The bot captures a video of each reservation attempt to help with debugging and verifying that the booking process works as expected.
-## 🎯 Court Priority Logic
-
-The extension uses a built-in court priority map based on user experience and court quality. It tries to reserve the best courts first, in this order:
-
-1. PICKLEBALL 2  
-2. PICKLEBALL 4  
-3. PICKLEBALL 8  
-4. PICKLEBALL 9  
-5. PICKLEBALL 3  
-6. PICKLEBALL 6  
-7. PICKLEBALL 7  
-8. PICKLEBALL 1  
-9. PICKLEBALL 5  
-10. PICKLEBALL 10
+- 📆 Automatically integrates with Google Calendar via the Google Calendar API for easy sharing with friends.
 
 ## Technology
 - JavaScript, Playwright for Website interaction
 - Github Action
 - Cron-Jobs.org for scheduling
-
+- Google Calendar API
 ## 🔒 Disclaimer
 
 This tool is intended for **personal use only** and should be used responsibly. It does not bypass any security or fair usage rules set by iPickle Cerritos.
