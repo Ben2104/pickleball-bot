@@ -9,9 +9,6 @@ dotenv.config();
 const email = process.env.EMAIL ? String(process.env.EMAIL).trim() : '';
 const password = process.env.PASSWORD ? String(process.env.PASSWORD).trim() : '';
 const USER_NAME = process.env.USER_NAME || 'Khoi Do'; // default to Khoi if there is no USER set
-const hr = "(//div[contains(@class,'Countdown')]//td)[1]";
-const min = "(//div[contains(@class,'Countdown')]//td)[3]";
-const sec = "(//div[contains(@class,'Countdown')]//td)[5]";
 let selectedCourt = null;
 // Add validation here
 if (!email || !password) {
