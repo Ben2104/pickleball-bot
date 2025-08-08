@@ -267,7 +267,6 @@ async function waitForCountdownToEnd(page) {
                 return true;
             }
 
-            await delay(1000);
         } catch (error) {
             console.log('⚠️ Error reading countdown:', error.message);
             await delay(1000);
