@@ -31,7 +31,7 @@ let TIME_SLOTS;
 let courtPriorityMap;
 
 if (USER_NAME === 'Khoi Do') {
-    TIME_SLOTS = ["7-7:30am", "7:30-8am", "8-8:30am", "8:30-9am"];
+    TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
     courtPriorityMap = new Map([
         [0, "PICKLEBALL 2"],
         [1, "PICKLEBALL 4"],
@@ -240,42 +240,36 @@ function createTimestampedFileName() {
 
 // Use these selectors in waitForCountdownToEnd instead of creating your own time logic
 async function waitForCountdownToEnd(page) {
-    console.log(`⏰ Waiting for countdown to reach ${BOOKING_HOUR}:${BOOKING_MINUTE.toString().padStart(2, '0')} PST...`);
+    // Define selectors for countdown and message
+    const selectors = {
+        messageUntilOpen: "//div[contains(text(),'Booking for this day will open in')]",
+        hr: "(//div[contains(@class,'Countdown')]//td)[1]",
+        min: "(//div[contains(@class,'Countdown')]//td)[3]",
+        sec: "(//div[contains(@class,'Countdown')]//td)[5]"
+    };
 
-    while (true) {
-        try {
-            // Wait for countdown elements to appear
-            await page.waitForSelector(hr, { timeout: 10000 });
-            await page.waitForSelector(min, { timeout: 10000 });
-            await page.waitForSelector(sec, { timeout: 10000 });
-
-            // Get countdown values from the page
-            const [hourStr, minStr, secStr] = await Promise.all([
-                page.$eval(hr, el => el.textContent.trim()),
-                page.$eval(min, el => el.textContent.trim()),
-                page.$eval(sec, el => el.textContent.trim())
-            ]);
-
-            const hours = parseInt(hourStr, 10) || 0;
-            const minutes = parseInt(minStr, 10) || 0;
-            const seconds = parseInt(secStr, 10) || 0;
-
-            // Format time as HH:MM:SS with leading zeros
-            const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes
-                .toString()
-                .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            console.log(`Time remaining: ${formattedTime}`);
-
-            // If countdown is zero, proceed
-            if (hours === 0 && minutes === 0 && seconds === 0) {
-                return true;
-            }
-
-        } catch (error) {
-            console.log('⚠️ Error reading countdown:', error.message);
-            await delay(1000);
+    let count = await page.locator(selectors.messageUntilOpen).count();
+    let loopCounter = 0;
+    while (count > 0) {
+        await page.waitForTimeout(200);
+        count = await page.locator(selectors.messageUntilOpen).count();
+        if (count < 1) {
+            break;
         }
+        try {
+            const hourStr = await page.$eval(selectors.hr, el => el.textContent.trim());
+            const minStr = await page.$eval(selectors.min, el => el.textContent.trim());
+            const secStr = await page.$eval(selectors.sec, el => el.textContent.trim());
+            if (loopCounter % 10 === 0) {
+                console.log(`time left remaining: ${hourStr}:${minStr}:${secStr}`);
+            }
+        } catch (e) {
+            // Ignore errors if countdown elements are not found
+        }
+        loopCounter++;
     }
+    // Optionally log when countdown is done
+    console.log('Countdown finished, proceeding to booking...');
 }
 
 async function login(page, sessionName) {
