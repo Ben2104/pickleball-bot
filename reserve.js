@@ -222,6 +222,7 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
 
         console.log('✅ Event added to calendar');
         console.log('📅 Event link:', response.data.htmlLink);
+        await page.goto(response.data.htmlLink)
         return response.data;
 
     } catch (error) {
@@ -1141,7 +1142,8 @@ async function run() {
 
             console.log('🕐 Final start time:', startDateTime);
             console.log('🕐 Final end time:', endDateTime);
-
+            
+            await waitForTimeout(10000); // Wait 10 seconds before adding to calendar
             await addCalendarEvent(startDateTime, endDateTime);
             await page.waitForTimeout(5000);
         }
