@@ -46,16 +46,16 @@ if (USER_NAME === 'Khoi Do') {
 else if (USER_NAME === 'Marvin') {
     TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
-        [0, "PICKLEBALL 5"],
-        [1, "PICKLEBALL 10"],
-        [2, "PICKLEBALL 7"],
-        [3, "PICKLEBALL 2"],
-        [4, "PICKLEBALL 8"],
-        [5, "PICKLEBALL 4"],
-        [6, "PICKLEBALL 1"],
-        [7, "PICKLEBALL 6"],
-        [8, "PICKLEBALL 3"],
-        [9, "PICKLEBALL 9"],
+        [0, "PICKLEBALL 3"],
+        [1, "PICKLEBALL 1"],
+        [2, "PICKLEBALL 8"],
+        [3, "PICKLEBALL 9"],
+        [4, "PICKLEBALL 5"],
+        [5, "PICKLEBALL 6"],
+        [6, "PICKLEBALL 7"],
+        [7, "PICKLEBALL 10"],
+        [8, "PICKLEBALL 2"],
+        [9, "PICKLEBALL 4"],
     ]);
 }
 const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
