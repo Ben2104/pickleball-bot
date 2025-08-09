@@ -90,11 +90,15 @@ jobs:
         with:
           name: kd-screen-recording
           path: |
-            recordings/**/video.webm
+            recordings/
+            *.webm
+            *.mp4
+            artifacts/**/*.webm
+            artifacts/**/*.mp4
           retention-days: 30
           compression-level: 1
+          if-no-files-found: ignore
         continue-on-error: true
-
 
 
   Marvin-job:
@@ -167,9 +171,14 @@ jobs:
         with:
           name: mv-screen-recording
           path: |
-            recordings/**/video.webm
+            recordings/
+            *.webm
+            *.mp4
+            artifacts/**/*.webm
+            artifacts/**/*.mp4
           retention-days: 30
           compression-level: 1
+          if-no-files-found: ignore
         continue-on-error: true
 
 
