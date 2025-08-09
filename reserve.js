@@ -855,8 +855,6 @@ async function clickSelectDateAndTime(page, sessionName) {
 
                 if (isVisible) {
                     await stepButton.click();
-                    // Wait for any navigation or page updates
-                    await page.waitForTimeout(1000);
 
                     return true;
                 } else {
