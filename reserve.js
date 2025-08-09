@@ -590,9 +590,6 @@ async function selectTimeSlots(page, sessionName) {
     console.log('⚡ Time slot selection complete');
 }
 async function selectCourtsByPriority(page, sessionName) {
-    console.log('🏟️ Selecting ONE court by priority...');
-
-
     try {
         // Wait for courts to be available
         await page.waitForTimeout(500);
@@ -634,7 +631,7 @@ async function selectCourtsByPriority(page, sessionName) {
                             if (isEnabled && !isSelected.includes('selected') && !isSelected.includes('disabled')) {
                                 // Human-like click with small delay
                                 await courtButton.click();
-                                console.log(`✅ Successfully selected ${courtName}`);
+                                console.log(`✅ selected ${courtName}`);
                                 selectedCourt = courtName;
                                 courtSelected = true;
 
@@ -681,9 +678,7 @@ async function selectCourtsByPriority(page, sessionName) {
         }
 
         // Summary of selected court
-        if (selectedCourt) {
-            console.log(`🎉 Successfully selected court: ${selectedCourt}`);
-        } else {
+        if (!selectedCourt) {
             console.log('❌ No courts were available');
             throw err;
         }
