@@ -248,7 +248,7 @@ async function waitForCountdownToEnd(page) {
     };
 
     let count = await page.locator(selectors.messageUntilOpen).count();
-    let loopCounter = 0;
+    let lastTime = '';
     while (count > 0) {
         await page.waitForTimeout(200);
         count = await page.locator(selectors.messageUntilOpen).count();
@@ -259,13 +259,14 @@ async function waitForCountdownToEnd(page) {
             const hourStr = await page.$eval(selectors.hr, el => el.textContent.trim());
             const minStr = await page.$eval(selectors.min, el => el.textContent.trim());
             const secStr = await page.$eval(selectors.sec, el => el.textContent.trim());
-            if (loopCounter % 10 === 0) {
-                console.log(`time left remaining: ${hourStr}:${minStr}:${secStr}`);
+            const currentTime = `${hourStr}:${minStr}:${secStr}`;
+            if (currentTime !== lastTime) {
+                console.log(`time left remaining: ${currentTime}`);
+                lastTime = currentTime;
             }
         } catch (e) {
             // Ignore errors if countdown elements are not found
         }
-        loopCounter++;
     }
     // Optionally log when countdown is done
     console.log('Countdown finished, proceeding to booking...');
