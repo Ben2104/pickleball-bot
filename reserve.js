@@ -1139,7 +1139,7 @@ async function run() {
             console.log('🕐 Final start time:', startDateTime);
             console.log('🕐 Final end time:', endDateTime);
 
-            await waitForTimeout(10000); // Wait 10 seconds before adding to calendar
+            await page.waitForTimeout(10000); // Wait 10 seconds before adding to calendar
             await addCalendarEvent(startDateTime, endDateTime);
             await page.waitForTimeout(5000);
         }
