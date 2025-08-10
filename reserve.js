@@ -579,6 +579,7 @@ async function selectTimeSlots(page, sessionName) {
                 i++;
                 console.log(`✅ Selected time slot: ${time} (${counter}/${TIME_SLOTS.length})`);
             } else {
+                await page.waitForTimeout(50);
                 continue;
             }
         } catch (err) {
@@ -708,7 +709,6 @@ async function clickNext(page, sessionName) {
 }
 
 async function clickAddButton(page) {
-    console.log('🔘 Looking for ADD button...');
 
     try {
         const selectors = [
@@ -723,6 +723,7 @@ async function clickAddButton(page) {
                 const addBtn = page.locator(selector).first();
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
+                    await page.waitForTimeout(50);
                     await addBtn.click();
                     return true;
                 }
@@ -783,6 +784,7 @@ async function addUsers(page, sessionName) {
         await addUsersBtn.waitFor({ timeout: 10000 });
 
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
+            await page.waitForTimeout(50)
             await addUsersBtn.click();
             const addButtonClicked = await clickAddButton(page);
 
