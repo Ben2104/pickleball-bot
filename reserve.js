@@ -222,7 +222,6 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
 
         console.log('✅ Event added to calendar');
         console.log('📅 Event link:', response.data.htmlLink);
-        await page.goto(response.data.htmlLink)
         return response.data;
 
     } catch (error) {
