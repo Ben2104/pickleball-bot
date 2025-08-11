@@ -578,7 +578,7 @@ async function selectTimeSlots(page, sessionName) {
                 i++;
                 console.log(`✅ Selected time slot: ${time} (${counter}/${TIME_SLOTS.length})`);
             } else {
-                await page.waitForTimeout(50);
+                await page.waitForTimeout(20);
                 continue;
             }
         } catch (err) {
@@ -591,10 +591,6 @@ async function selectTimeSlots(page, sessionName) {
 }
 async function selectCourtsByPriority(page, sessionName) {
     try {
-        // Wait for courts to be available
-        await page.waitForTimeout(500);
-
-
         // Iterate through courts by priority (0 = highest priority)
         while (courtPriorityMap.size > 0) {
             // Get the lowest priority key (smallest number)
