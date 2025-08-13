@@ -222,6 +222,7 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
 
         console.log('✅ Event added to calendar');
         console.log('📅 Event link:', response.data.htmlLink);
+        await page.goto(response.data.htmlLink)
         return response.data;
 
     } catch (error) {
@@ -578,7 +579,6 @@ async function selectTimeSlots(page, sessionName) {
                 i++;
                 console.log(`✅ Selected time slot: ${time} (${counter}/${TIME_SLOTS.length})`);
             } else {
-                await page.waitForTimeout(20);
                 continue;
             }
         } catch (err) {
@@ -591,6 +591,10 @@ async function selectTimeSlots(page, sessionName) {
 }
 async function selectCourtsByPriority(page, sessionName) {
     try {
+        // Wait for courts to be available
+        await page.waitForTimeout(300);
+
+
         // Iterate through courts by priority (0 = highest priority)
         while (courtPriorityMap.size > 0) {
             // Get the lowest priority key (smallest number)
@@ -704,6 +708,7 @@ async function clickNext(page, sessionName) {
 }
 
 async function clickAddButton(page) {
+    console.log('🔘 Looking for ADD button...');
 
     try {
         const selectors = [
@@ -718,7 +723,6 @@ async function clickAddButton(page) {
                 const addBtn = page.locator(selector).first();
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
-                    await page.waitForTimeout(50);
                     await addBtn.click();
                     return true;
                 }
@@ -779,7 +783,6 @@ async function addUsers(page, sessionName) {
         await addUsersBtn.waitFor({ timeout: 10000 });
 
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
-            await page.waitForTimeout(50)
             await addUsersBtn.click();
             const addButtonClicked = await clickAddButton(page);
 
@@ -1136,8 +1139,6 @@ async function run() {
             console.log('🕐 Final start time:', startDateTime);
             console.log('🕐 Final end time:', endDateTime);
 
-            await page.waitForTimeout(10000); // Wait 10 seconds before adding to calendar
-            await addCalendarEvent(startDateTime, endDateTime);
             await page.waitForTimeout(5000);
         }
         else {
