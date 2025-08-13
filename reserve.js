@@ -1136,7 +1136,8 @@ async function run() {
 
             console.log('🕐 Final start time:', startDateTime);
             console.log('🕐 Final end time:', endDateTime);
-
+            
+            await addCalendarEvent(startDateTime, endDateTime)
             await page.waitForTimeout(5000);
         }
         else {
