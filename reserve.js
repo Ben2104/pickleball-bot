@@ -708,7 +708,6 @@ async function clickNext(page, sessionName) {
 }
 
 async function clickAddButton(page) {
-    console.log('🔘 Looking for ADD button...');
 
     try {
         const selectors = [
@@ -776,7 +775,6 @@ async function clickCheckout(page, sessionName) {
 }
 
 async function addUsers(page, sessionName) {
-    console.log('👥 Adding users...');
 
     try {
         const addUsersBtn = page.locator('button:has-text("ADD USERS")').first();
