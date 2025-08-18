@@ -1121,6 +1121,7 @@ async function run() {
 
         if (confirmationNumber) {
             console.log(`Booking confirmed! Here's the confirmation number: ${confirmationNumber?.trim()}`)
+            console.log(`Court info: ${courtInfoSelector?.trim()}`);
             console.log(`🏆 BOOKING COMPLETE! Total booking time: ${bookingTime}ms`);
             console.log('✅ Booking flow complete');
             const today = new Date();
