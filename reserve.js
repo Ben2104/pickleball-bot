@@ -180,7 +180,7 @@ try {
     auth = null;
     calendar = null;
 }
-export async function addCalendarEvent(startDateTime, endDateTime) {
+export async function addCalendarEvent(startDateTime, endDateTime, courtInfo) {
     // Skip if no auth configured
     if (!auth || !calendar) {
         console.log('⚠️ Google Calendar not configured - skipping calendar integration');
@@ -200,9 +200,9 @@ export async function addCalendarEvent(startDateTime, endDateTime) {
         console.log('End time:', endDateTime);
 
         const event = {
-            summary: `🏓 ${USER_NAME}'s court,  court: ${selectedCourt}`,
+            summary: `🏓 ${USER_NAME}'s court,  court: ${courtInfo}`,
             location: 'iPickle Cerritos',
-            description: `${USER_NAME}'s court,  court: ${selectedCourt}`,
+            description: `${USER_NAME}'s court,  court: ${courtInfo}`,
             start: {
                 dateTime: startDateTime,
                 timeZone: 'America/Los_Angeles',
@@ -1116,6 +1116,9 @@ async function run() {
         // After booking loop is complete and booking is confirmed
         const bookingTime = Date.now() - bookingStart;
         let confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim());
+        // Selector for the confirmation court info element
+        let courtInfoSelector = await page.$eval("//div[contains(text(),'Pickleball') and contains(text(),'Court')]", el => el.textContent.trim());
+
         if (confirmationNumber) {
             console.log(`Booking confirmed! Here's the confirmation number: ${confirmationNumber?.trim()}`)
             console.log(`🏆 BOOKING COMPLETE! Total booking time: ${bookingTime}ms`);
@@ -1137,7 +1140,7 @@ async function run() {
             console.log('🕐 Final start time:', startDateTime);
             console.log('🕐 Final end time:', endDateTime);
             
-            await addCalendarEvent(startDateTime, endDateTime)
+            await addCalendarEvent(startDateTime, endDateTime, courtInfoSelector)
             await page.waitForTimeout(5000);
         }
         else {
