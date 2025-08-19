@@ -180,7 +180,7 @@ try {
     auth = null;
     calendar = null;
 }
-export async function addCalendarEvent(startDateTime, endDateTime, courtInfo) {
+export async function  addCalendarEvent(startDateTime, endDateTime, courtInfo) {
     // Skip if no auth configured
     if (!auth || !calendar) {
         console.log('⚠️ Google Calendar not configured - skipping calendar integration');
