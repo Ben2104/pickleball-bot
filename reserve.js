@@ -808,9 +808,9 @@ async function clickBook(page, sessionName) {
     try {
         const exactSelector = '//button[text()="Book"]';
 
-        const bookBtn = page.locator(exactSelector).first();
+        const bookBtn = page.locator(exactSelector);
 
-        if (await bookBtn.isVisible()) {
+        if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
             await bookBtn.click({timeout: 5000});
         } else {
             console.error('❌ Book button not visible or disabled');
