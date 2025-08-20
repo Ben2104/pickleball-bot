@@ -806,19 +806,12 @@ async function addUsers(page, sessionName) {
 async function clickBook(page, sessionName) {
 
     try {
-        const exactSelector = 'button.ui.button.primary.fluid.large';
+        const exactSelector = '//button[text()="Book"]';
 
         const bookBtn = page.locator(exactSelector).first();
 
-        if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
-            const buttonText = await bookBtn.textContent();
-            if (buttonText && buttonText.trim().toLowerCase().includes('book')) {
-                await bookBtn.click();
-                return true;
-            } else {
-                console.error('❌ Button found but does not contain "Book" text');
-                return false;
-            }
+        if (await bookBtn.isVisible()) {
+            await bookBtn.click({timeout: 5000});
         } else {
             console.error('❌ Book button not visible or disabled');
             return false;
