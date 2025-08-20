@@ -1058,6 +1058,7 @@ async function run() {
         await page.waitForSelector('.day-container button', { timeout: 15000 });
         await selectTargetDate(page, sessionName);
         await selectCourtType(page, sessionName);
+        console.log(courtPriorityMap)
 
 
         await waitForCountdownToEnd(page);
