@@ -812,6 +812,7 @@ async function clickBook(page, sessionName) {
 
         if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
             await bookBtn.click({timeout: 5000});
+            return true
         } else {
             console.error('❌ Book button not visible or disabled');
             return false;
@@ -1096,6 +1097,7 @@ async function run() {
                 // Go to checkout
                 await clickCheckout(page, sessionName);
                 // BOOK
+                await page.waitForTimeout(500);
                 await clickBook(page, sessionName);
                 await page.waitForTimeout(1000);
 
