@@ -651,6 +651,13 @@ async function selectCourtsByPriority(page, sessionName) {
                                 break;
                             } else {
                                 console.log(`⚠️ ${courtName} not available`);
+                                // Remove the unavailable court from the map
+                                for (const [key, value] of courtPriorityMap.entries()) {
+                                    if (value === courtName) {
+                                        courtPriorityMap.delete(key);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     } catch (selectorError) {
