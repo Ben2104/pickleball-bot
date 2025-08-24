@@ -565,7 +565,6 @@ async function selectCourtType(page, sessionName) {
 async function selectTimeSlots(page, sessionName) {
     console.log('🕒 Starting time slot selection...');
 
-
     let counter = 0;
     let i = 0;
     while (counter < TIME_SLOTS.length) {
@@ -574,6 +573,12 @@ async function selectTimeSlots(page, sessionName) {
         try {
             const isVisible = await btn.isVisible();
             if (isVisible) {
+                // Check if button has 'red' in its class
+                const className = await btn.getAttribute('class');
+                if (className && className.includes('red')) {
+                    console.log(`❌ Time slot "${time}" is unavailable. Aborting booking.`);
+                    throw new Error(`Time slot "${time}" is unavailable (red button)`);
+                }
                 await btn.click();
                 counter++;
                 i++;
@@ -583,11 +588,11 @@ async function selectTimeSlots(page, sessionName) {
             }
         } catch (err) {
             console.log(`❌ Error selecting time slot "${time}": ${err.message}`);
+            throw err; // break the program if error occurs
         }
     }
 
-
-    console.log('⚡ Time slot selection complete');
+    console.log(' Time slot selection complete');
 }
 async function selectCourtsByPriority(page, sessionName) {
     try {
