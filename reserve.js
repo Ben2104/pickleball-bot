@@ -577,7 +577,7 @@ async function selectTimeSlots(page, sessionName) {
                 const className = await btn.getAttribute('class');
                 if (className && className.includes('red')) {
                     console.log(`❌ Time slot "${time}" is unavailable. Aborting booking.`);
-                    throw new Error(`Time slot "${time}" is unavailable (red button)`);
+                    throw new Error(`Time slot "${time}" is unavailable`);
                 }
                 await btn.click();
                 counter++;
