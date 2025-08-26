@@ -1084,6 +1084,7 @@ async function run() {
 
 
         let addUser = false;
+        let click_next = false
         await selectTimeSlots(page, sessionName);
         // let confirmationCount = await page.locator("//div[text()='Confirmation Number']/following-sibling::div").count();;
         try {
@@ -1101,7 +1102,9 @@ async function run() {
                 // Select a different court by priority
                 await selectCourtsByPriority(page, sessionName);
                 // Click Next to proceed
-                await clickNext(page, sessionName);
+                if (!click_next) {
+                    await clickNext(page, sessionName);
+                }
                 if (!addUser) {
                     await addUsers(page, sessionName);
                     addUser = true;
