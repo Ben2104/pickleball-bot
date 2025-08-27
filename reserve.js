@@ -816,7 +816,7 @@ async function addUsers(page, sessionName) {
 }
 
 async function clickBook(page, sessionName) {
-    await page.waitForTimeout(500); // Wait for book buttons to appear
+    await page.waitForTimeout(1000); // Wait for book buttons to appear
     try {
         const exactSelector = '//button[text()="Book"]';
 
