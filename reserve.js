@@ -1104,6 +1104,7 @@ async function run() {
                 // Click Next to proceed
                 if (!click_next) {
                     await clickNext(page, sessionName);
+                    click_next = true;
                 }
                 if (!addUser) {
                     await addUsers(page, sessionName);
