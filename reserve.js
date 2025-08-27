@@ -814,9 +814,9 @@ async function addUsers(page, sessionName) {
         return false;
     }
 }
-
+let book_clicked = false;
 async function clickBook(page, sessionName) {
-    let book_clicked = false;
+    
     if (!book_clicked) {
         await page.waitForTimeout(500); // Wait for book buttons to appear
         book_clicked = true;
