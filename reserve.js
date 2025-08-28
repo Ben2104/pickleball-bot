@@ -180,7 +180,7 @@ try {
     auth = null;
     calendar = null;
 }
-export async function  addCalendarEvent(startDateTime, endDateTime, courtInfo) {
+export async function addCalendarEvent(startDateTime, endDateTime, courtInfo) {
     // Skip if no auth configured
     if (!auth || !calendar) {
         console.log('⚠️ Google Calendar not configured - skipping calendar integration');
@@ -222,7 +222,7 @@ export async function  addCalendarEvent(startDateTime, endDateTime, courtInfo) {
 
         console.log('✅ Event added to calendar');
         console.log('📅 Event link:', response.data.htmlLink);
-        
+
         return response.data;
 
     } catch (error) {
@@ -650,7 +650,7 @@ async function selectCourtsByPriority(page, sessionName) {
                                 // Exit immediately after selecting one court
                                 break;
                             } else {
-                                console.log(`${courtName} not available`);
+                                console.log(` ${courtName} not available`);
                                 // Remove the unavailable court from the map
                                 for (const [key, value] of courtPriorityMap.entries()) {
                                     if (value === courtName) {
@@ -816,12 +816,12 @@ async function addUsers(page, sessionName) {
 }
 let book_clicked = false;
 async function clickBook(page, sessionName) {
-    
+
     if (!book_clicked) {
         await page.waitForTimeout(500); // Wait for book buttons to appear for 500ms for the first time
         book_clicked = true;
     }
-    else{
+    else {
         await page.waitForTimeout(1000); // Wait for book buttons to appear 1000ms for subsequent attempts
     }
     try {
@@ -830,7 +830,7 @@ async function clickBook(page, sessionName) {
         const bookBtn = page.locator(exactSelector);
 
         if (await bookBtn.isVisible() && await bookBtn.isEnabled()) {
-            await bookBtn.click({timeout: 5000});
+            await bookBtn.click({ timeout: 5000 });
             return true
         } else {
             console.error('❌ Book button not visible or disabled');
@@ -1071,7 +1071,9 @@ async function run() {
         await page.waitForSelector('.day-container button', { timeout: 15000 });
         await selectTargetDate(page, sessionName);
         await selectCourtType(page, sessionName);
-        console.log(courtPriorityMap)
+        for (const value of courtPriorityMap.values()) {
+            console.log(value);
+        }
 
 
         await waitForCountdownToEnd(page);
@@ -1153,7 +1155,7 @@ async function run() {
 
             console.log('🕐 Final start time:', startDateTime);
             console.log('🕐 Final end time:', endDateTime);
-            
+
             await addCalendarEvent(startDateTime, endDateTime, courtInfoSelector)
             await page.waitForTimeout(5000);
         }
