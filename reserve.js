@@ -241,6 +241,7 @@ function createTimestampedFileName() {
 // Use these selectors in waitForCountdownToEnd instead of creating your own time logic
 async function waitForCountdownToEnd(page) {
     // Define selectors for countdown and message
+    await page.waitForTimeout(1000); // Initial wait to allow countdown to appear
     const selectors = {
         messageUntilOpen: "//div[contains(text(),'Booking for this day will open in')]",
         hr: "(//div[contains(@class,'Countdown')]//td)[1]",
