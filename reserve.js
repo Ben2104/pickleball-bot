@@ -818,11 +818,11 @@ let book_clicked = false;
 async function clickBook(page, sessionName) {
     
     if (!book_clicked) {
-        await page.waitForTimeout(500); // Wait for book buttons to appear
+        await page.waitForTimeout(500); // Wait for book buttons to appear for 500ms for the first time
         book_clicked = true;
     }
     else{
-        await page.waitForTimeout(1000); // Wait for book buttons to appear
+        await page.waitForTimeout(1000); // Wait for book buttons to appear 1000ms for subsequent attempts
     }
     try {
         const exactSelector = '//button[text()="Book"]';
