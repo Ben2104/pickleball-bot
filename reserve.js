@@ -635,7 +635,7 @@ async function selectCourtsByPriority(page, sessionName) {
 
                             // Check if court is available (not already selected or disabled)
                             if (isEnabled && !isSelected.includes('selected') && !isSelected.includes('disabled')) {
-                                // Human-like click with small delay
+                                await page.waitForTimeout(200);
                                 await courtButton.click();
                                 console.log(`✅ selected ${courtName}`);
                                 selectedCourt = courtName;
@@ -735,6 +735,7 @@ async function clickAddButton(page) {
                 const addBtn = page.locator(selector).first();
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
+                    await page.waitForTimeout(200);
                     await addBtn.click();
                     return true;
                 }
@@ -769,6 +770,7 @@ async function clickCheckout(page, sessionName) {
                 const checkoutBtn = page.locator(selector).first();
 
                 if (await checkoutBtn.isVisible()) {
+                    await page.waitForTimeout(200);
                     await checkoutBtn.click();
                     return true;
                 }
@@ -794,6 +796,7 @@ async function addUsers(page, sessionName) {
         await addUsersBtn.waitFor({ timeout: 10000 });
 
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
+            await page.waitForTimeout(200);
             await addUsersBtn.click();
             const addButtonClicked = await clickAddButton(page);
 
