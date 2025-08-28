@@ -1078,7 +1078,7 @@ async function run() {
 
 
         const bookingStart = Date.now();
-        const BOOKING_LOOP_TIMEOUT = 60 * 1000; // 60 seconds
+        
 
         //listen for alert
         let alertAppeared = false;
@@ -1096,11 +1096,6 @@ async function run() {
         // let confirmationCount = await page.locator("//div[text()='Confirmation Number']/following-sibling::div").count();;
         try {
             while (courtPriorityMap.size > 0) {
-                // Check if we've exceeded the timeout
-                if (Date.now() - bookingStart > BOOKING_LOOP_TIMEOUT) {
-                    throw new Error('❌ Booking failed: Booking loop exceeded 60 seconds without success.');
-                }
-
                 // If alert appeared, log and continue loop
                 if (alertAppeared) {
                     console.log(`⚠️ Alert appeared: ${lastDialogMessage}`);
