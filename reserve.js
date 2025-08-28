@@ -650,7 +650,7 @@ async function selectCourtsByPriority(page, sessionName) {
                                 // Exit immediately after selecting one court
                                 break;
                             } else {
-                                console.log(`⚠️ ${courtName} not available`);
+                                console.log(`${courtName} not available`);
                                 // Remove the unavailable court from the map
                                 for (const [key, value] of courtPriorityMap.entries()) {
                                     if (value === courtName) {
