@@ -569,6 +569,7 @@ async function selectTimeSlots(page, sessionName) {
     let counter = 0;
     let i = 0;
     while (counter < TIME_SLOTS.length) {
+        await page.waitForTimeout(70);
         const time = TIME_SLOTS[i];
         const btn = page.locator(`button:has-text("${time}")`).first();
         try {
@@ -635,7 +636,7 @@ async function selectCourtsByPriority(page, sessionName) {
 
                             // Check if court is available (not already selected or disabled)
                             if (isEnabled && !isSelected.includes('selected') && !isSelected.includes('disabled')) {
-                                await page.waitForTimeout(200);
+                                await page.waitForTimeout(100);
                                 await courtButton.click();
                                 console.log(`✅ selected ${courtName}`);
                                 selectedCourt = courtName;
@@ -735,7 +736,7 @@ async function clickAddButton(page) {
                 const addBtn = page.locator(selector).first();
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
-                    await page.waitForTimeout(200);
+                    await page.waitForTimeout(100);
                     await addBtn.click();
                     return true;
                 }
@@ -770,7 +771,7 @@ async function clickCheckout(page, sessionName) {
                 const checkoutBtn = page.locator(selector).first();
 
                 if (await checkoutBtn.isVisible()) {
-                    await page.waitForTimeout(200);
+                    await page.waitForTimeout(100);
                     await checkoutBtn.click();
                     return true;
                 }
@@ -796,7 +797,7 @@ async function addUsers(page, sessionName) {
         await addUsersBtn.waitFor({ timeout: 10000 });
 
         if (await addUsersBtn.isVisible() && await addUsersBtn.isEnabled()) {
-            await page.waitForTimeout(200);
+            await page.waitForTimeout(100);
             await addUsersBtn.click();
             const addButtonClicked = await clickAddButton(page);
 
