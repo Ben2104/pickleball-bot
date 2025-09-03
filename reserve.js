@@ -569,7 +569,7 @@ async function selectTimeSlots(page, sessionName) {
     let counter = 0;
     let i = 0;
     while (counter < TIME_SLOTS.length) {
-        await page.waitForTimeout(70);
+        await page.waitForTimeout(20);
         const time = TIME_SLOTS[i];
         const btn = page.locator(`button:has-text("${time}")`).first();
         try {
