@@ -598,8 +598,7 @@ async function selectTimeSlots(page, sessionName) {
 }
 async function selectCourtsByPriority(page, sessionName) {
     try {
-        // Wait for courts to be available
-        await page.waitForTimeout(300);
+        
 
 
         // Iterate through courts by priority (0 = highest priority)
@@ -736,7 +735,7 @@ async function clickAddButton(page) {
                 const addBtn = page.locator(selector).first();
 
                 if (await addBtn.isVisible() && await addBtn.isEnabled()) {
-                    await page.waitForTimeout(100);
+                    await page.waitForTimeout(50);
                     await addBtn.click();
                     return true;
                 }
