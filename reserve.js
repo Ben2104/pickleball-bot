@@ -599,7 +599,7 @@ async function selectTimeSlots(page, sessionName) {
 async function selectCourtsByPriority(page, sessionName) {
     try {
         
-
+        await page.waitForTimeout(150)
 
         // Iterate through courts by priority (0 = highest priority)
         while (courtPriorityMap.size > 0) {
