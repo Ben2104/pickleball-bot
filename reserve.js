@@ -757,12 +757,7 @@ async function clickAddButton(page) {
 async function clickCheckout(page, sessionName) {
 
     try {
-        const selectors = [
-            'td:has(h2.mb0.stepper_title:text("Checkout"))',
-            'h2.mb0.stepper_title:text("Checkout")',
-            'h2:has-text("Checkout")',
-            '*:has-text("Checkout")'
-        ];
+        const selectors = ["//h2[text()='Checkout']"];
 
         for (const selector of selectors) {
             try {
@@ -851,14 +846,7 @@ async function clickBook(page, sessionName) {
 async function clickSelectDateAndTime(page, sessionName) {
 
     try {
-        const selectors = [
-            'h2.mb0.stepper_title:has-text("Select date and time")',
-            'h2:has-text("Select date and time")',
-            '.stepper_title:has-text("Select date and time")',
-            '*:has-text("Select date and time")',
-            'h2.stepper_title:contains("Select date and time")',
-            '[class*="stepper"]:has-text("Select date and time")'
-        ];
+        const selectors = ["//h2[text()='Select date and time']"];
 
         for (const selector of selectors) {
             try {
@@ -884,20 +872,6 @@ async function clickSelectDateAndTime(page, sessionName) {
         console.error('❌ "Select date and time" button not found with any selector');
 
         // Take debug screenshot
-
-
-        // Log available stepper elements for debugging
-        console.log('🔍 Looking for any stepper-related elements...');
-        const stepperElements = await page.$$('[class*="stepper"], h2, .mb0');
-        for (let i = 0; i < Math.min(stepperElements.length, 10); i++) {
-            try {
-                const elementText = await stepperElements[i].textContent();
-                const elementClass = await stepperElements[i].getAttribute('class');
-                console.log(`   Stepper element ${i + 1}: "${elementText?.trim() || 'No text'}" (class: ${elementClass})`);
-            } catch (e) {
-                console.log(`   Stepper element ${i + 1}: Error reading properties`);
-            }
-        }
 
         return false;
 
