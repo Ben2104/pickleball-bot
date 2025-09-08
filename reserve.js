@@ -46,9 +46,9 @@ if (USER_NAME === 'Khoi Do') {
 else if (USER_NAME === 'Marvin') {
     TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
-        [0, "PICKLEBALL 3"],
-        [1, "PICKLEBALL 1"],
-        [2, "PICKLEBALL 8"],
+        [0, "PICKLEBALL 1"],
+        [1, "PICKLEBALL 8"],
+        [2, "PICKLEBALL 3"],
         [3, "PICKLEBALL 9"],
         [4, "PICKLEBALL 5"],
         [5, "PICKLEBALL 6"],
@@ -569,7 +569,7 @@ async function selectTimeSlots(page, sessionName) {
     let counter = 0;
     let i = 0;
     while (counter < TIME_SLOTS.length) {
-        await page.waitForTimeout(20);
+        await page.waitForTimeout(10);
         const time = TIME_SLOTS[i];
         const btn = page.locator(`button:has-text("${time}")`).first();
         try {
@@ -599,7 +599,7 @@ async function selectTimeSlots(page, sessionName) {
 async function selectCourtsByPriority(page, sessionName) {
     try {
         
-        await page.waitForTimeout(150)
+        await page.waitForTimeout(50); // Wait for courts to load
 
         // Iterate through courts by priority (0 = highest priority)
         while (courtPriorityMap.size > 0) {
