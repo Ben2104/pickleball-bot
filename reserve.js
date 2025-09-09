@@ -569,7 +569,7 @@ async function selectTimeSlots(page, sessionName) {
     let counter = 0;
     let i = 0;
     while (counter < TIME_SLOTS.length) {
-        await page.waitForTimeout(10);
+        
         const time = TIME_SLOTS[i];
         const btn = page.locator(`button:has-text("${time}")`).first();
         try {
@@ -635,7 +635,6 @@ async function selectCourtsByPriority(page, sessionName) {
 
                             // Check if court is available (not already selected or disabled)
                             if (isEnabled && !isSelected.includes('selected') && !isSelected.includes('disabled')) {
-                                await page.waitForTimeout(100);
                                 await courtButton.click();
                                 console.log(`✅ selected ${courtName}`);
                                 selectedCourt = courtName;
