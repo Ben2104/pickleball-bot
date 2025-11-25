@@ -27,21 +27,45 @@ const COURT_TYPE = 'Pickleball';
 
 let TIME_SLOTS;
 let courtPriorityMap;
+const { dayName, dayNumber } = getTargetDateInfo();
+const todayAbbrev = dayName.toUpperCase().slice(0, 3);
 
+
+// Example usage:
+// const todayAbbrev = getDayAbbrev(); // e.g. "MON"
 if (USER_NAME === 'Khoi Do') {
-    TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
-    courtPriorityMap = new Map([
-        [0, "PICKLEBALL 2"],
-        [1, "PICKLEBALL 4"],
-        [2, "PICKLEBALL 8"],
-        [3, "PICKLEBALL 9"],
-        [4, "PICKLEBALL 3"],
-        [5, "PICKLEBALL 6"],
-        [6, "PICKLEBALL 7"],
-        [7, "PICKLEBALL 1"],
-        [8, "PICKLEBALL 5"],
-        [9, "PICKLEBALL 10"],
-    ]);
+    if (todayAbbrev === 'SAT' || todayAbbrev === 'SUN') {
+        TIME_SLOTS = ["6-6:30pm", "6:30-7pm", "7-7:30pm", "7:30-8pm"];
+        courtPriorityMap = new Map([
+            [1, "PICKLEBALL 4"],
+            [0, "PICKLEBALL 2"],
+            [2, "PICKLEBALL 8"],
+            [3, "PICKLEBALL 9"],
+            [4, "PICKLEBALL 3"],
+            [5, "PICKLEBALL 6"],
+            [6, "PICKLEBALL 7"],
+            [7, "PICKLEBALL 1"],
+            [8, "PICKLEBALL 5"],
+            [9, "PICKLEBALL 10"],
+        ]);
+    }
+
+    else {
+        TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
+        courtPriorityMap = new Map([
+            [0, "PICKLEBALL 2"],
+            [1, "PICKLEBALL 4"],
+            [2, "PICKLEBALL 8"],
+            [3, "PICKLEBALL 9"],
+            [4, "PICKLEBALL 3"],
+            [5, "PICKLEBALL 6"],
+            [6, "PICKLEBALL 7"],
+            [7, "PICKLEBALL 1"],
+            [8, "PICKLEBALL 5"],
+            [9, "PICKLEBALL 10"],
+        ]);
+    }
+
 }
 else if (USER_NAME === 'Marvin') {
     TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
@@ -569,7 +593,7 @@ async function selectTimeSlots(page, sessionName) {
     let counter = 0;
     let i = 0;
     while (counter < TIME_SLOTS.length) {
-        
+
         const time = TIME_SLOTS[i];
         const btn = page.locator(`button:has-text("${time}")`).first();
         try {
@@ -598,7 +622,7 @@ async function selectTimeSlots(page, sessionName) {
 }
 async function selectCourtsByPriority(page, sessionName) {
     try {
-        
+
         await page.waitForTimeout(50); // Wait for courts to load
 
         // Iterate through courts by priority (0 = highest priority)
@@ -1057,7 +1081,7 @@ async function run() {
 
 
         const bookingStart = Date.now();
-        
+
 
         //listen for alert
         let alertAppeared = false;
