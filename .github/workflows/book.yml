@@ -36,7 +36,7 @@ jobs:
       - name: Show runner IP
         run:
           echo "Runner IP:"
-          curl -s https://api.ipify.org && echo
+          echo $(curl -s https://api.ipify.org) 
       - name: Install dependencies
         run: |
           npm install
