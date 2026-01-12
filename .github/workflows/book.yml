@@ -33,7 +33,10 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-
+      - name: Show runner IP
+        run:
+          echo "Runner IP:"
+          echo "Runner IP: $(curl -s https://api.ipify.org)"
       - name: Install dependencies
         run: |
           npm install
