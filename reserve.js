@@ -12,6 +12,7 @@ import {
     login,
     goToBookingPage,
     getTargetDateInfo,
+    getTimezoneOffset,
     selectTargetDate,
     selectCourtType,
     selectTimeSlots,
@@ -365,8 +366,11 @@ async function run() {
             const startHour = convertTo24Hour(startTime);
             const endHour = convertTo24Hour(endTime);
 
-            const startDateTime = `${formattedDate}T${startHour}-07:00`;
-            const endDateTime = `${formattedDate}T${endHour}-07:00`;
+            // Get the correct timezone offset for the booking date (accounts for DST)
+            const timezoneOffset = getTimezoneOffset(today);
+
+            const startDateTime = `${formattedDate}T${startHour}${timezoneOffset}`;
+            const endDateTime = `${formattedDate}T${endHour}${timezoneOffset}`;
 
             console.log('🕐 Final start time:', startDateTime);
             console.log('🕐 Final end time:', endDateTime);

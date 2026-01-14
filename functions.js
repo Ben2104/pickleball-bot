@@ -451,6 +451,57 @@ export function getTargetDateInfo() {
 }
 
 /**
+ * Get the timezone offset for a specific date in America/Los_Angeles timezone
+ * Returns the offset string (e.g., '-07:00' for PDT or '-08:00' for PST)
+ */
+export function getTimezoneOffset(date) {
+    // Create a date string in LA timezone
+    const laDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    
+    // Get offset in minutes
+    const offsetMinutes = date.getTimezoneOffset() - laDate.getTimezoneOffset();
+    
+    // Alternatively, use a more reliable method:
+    // Get the UTC time for a specific time in LA
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Los_Angeles',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+    
+    const parts = formatter.formatToParts(date);
+    const laDateTime = {};
+    parts.forEach(({ type, value }) => {
+        laDateTime[type] = value;
+    });
+    
+    // Create a UTC date and LA date to compare
+    const utcTime = Date.UTC(
+        parseInt(laDateTime.year),
+        parseInt(laDateTime.month) - 1,
+        parseInt(laDateTime.day),
+        parseInt(laDateTime.hour),
+        parseInt(laDateTime.minute),
+        parseInt(laDateTime.second)
+    );
+    
+    const offsetMs = utcTime - date.getTime();
+    const offsetHours = Math.floor(Math.abs(offsetMs) / (1000 * 60 * 60));
+    const offsetMins = Math.floor((Math.abs(offsetMs) % (1000 * 60 * 60)) / (1000 * 60));
+    
+    const sign = offsetMs >= 0 ? '+' : '-';
+    const offset = `${sign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+    
+    console.log(`🕐 Timezone offset for ${date.toISOString()}: ${offset}`);
+    return offset;
+}
+
+/**
  * Select target date on booking page
  */
 export async function selectTargetDate(page, sessionName) {
