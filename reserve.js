@@ -104,7 +104,7 @@ else if (USER_NAME === 'Marvin') {
 }
 else if (USER_NAME === 'Elbert') {
     if (todayAbbrev === 'SAT' || todayAbbrev === 'SUN') {
-        TIME_SLOTS = ["6-6:30pm", "6:30-7pm", "7-7:30pm", "7:30-8pm"];
+        TIME_SLOTS = ["8-8:30pm", "8:30-9pm", "9-9:30pm", "9:30-10pm"];
         courtPriorityMap = new Map([
             [0, "PICKLEBALL 3"],
             [1, "PICKLEBALL 1"],
