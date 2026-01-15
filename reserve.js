@@ -133,7 +133,21 @@ else if (USER_NAME === 'Elbert') {
             [9, "PICKLEBALL 10"],
         ]);
     }
-
+}
+else if (USER_NAME === 'Patrick') {
+    TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
+    courtPriorityMap = new Map([
+        [0, "PICKLEBALL 4"],
+        [1, "PICKLEBALL 6"],
+        [2, "PICKLEBALL 2"],
+        [3, "PICKLEBALL 3"],
+        [4, "PICKLEBALL 9"],
+        [5, "PICKLEBALL 1"],
+        [6, "PICKLEBALL 7"],
+        [7, "PICKLEBALL 8"],
+        [8, "PICKLEBALL 10"],
+        [9, "PICKLEBALL 5"],
+    ]);
 }
 const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
 const BOOKING_HOUR = parseInt(process.env.BOOKING_HOUR) || 7;
