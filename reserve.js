@@ -393,7 +393,12 @@ async function run() {
 
         // After booking loop is complete and booking is confirmed
         const bookingTime = Date.now() - bookingStart;
-        let confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim());
+        let confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim()).catch(() => null);
+        
+        if (!confirmationNumber) {
+            await page.waitForSelector("//div[text()='Confirmation Number']/following-sibling::div", { timeout: 5000 });
+            confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim());
+        }
         // Selector for the confirmation court info element
         let courtInfoSelector = await page.$eval("//div[contains(text(),'Pickleball') and contains(text(),'Court')]", el => el.textContent.trim());
 
