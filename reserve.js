@@ -88,18 +88,33 @@ if (USER_NAME === 'Khoi Do') {
 
 }
 else if (USER_NAME === 'Marvin') {
+    if (todayAbbrev === 'SAT' || todayAbbrev === 'SUN') {
+        TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
+        courtPriorityMap = new Map([
+            [0, "PICKLEBALL 1"],
+            [1, "PICKLEBALL 8"],
+            [2, "PICKLEBALL 3"],
+            [3, "PICKLEBALL 9"],
+            [4, "PICKLEBALL 5"],
+            [5, "PICKLEBALL 6"],
+            [6, "PICKLEBALL 7"],
+            [7, "PICKLEBALL 10"],
+            [8, "PICKLEBALL 2"],
+            [9, "PICKLEBALL 4"],
+        ]);
+    }
     TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
-        [0, "PICKLEBALL 1"],
-        [1, "PICKLEBALL 8"],
+        [0, "PICKLEBALL 4"],
+        [1, "PICKLEBALL 6"],
         [2, "PICKLEBALL 3"],
-        [3, "PICKLEBALL 9"],
-        [4, "PICKLEBALL 5"],
-        [5, "PICKLEBALL 6"],
+        [3, "PICKLEBALL 2"],
+        [4, "PICKLEBALL 9"],
+        [5, "PICKLEBALL 1"],
         [6, "PICKLEBALL 7"],
-        [7, "PICKLEBALL 10"],
-        [8, "PICKLEBALL 2"],
-        [9, "PICKLEBALL 4"],
+        [7, "PICKLEBALL 8"],
+        [8, "PICKLEBALL 10"],
+        [9, "PICKLEBALL 5"],
     ]);
 }
 else if (USER_NAME === 'Elbert') {
@@ -137,16 +152,16 @@ else if (USER_NAME === 'Elbert') {
 else if (USER_NAME === 'Patrick') {
     TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
-        [0, "PICKLEBALL 4"],
-        [1, "PICKLEBALL 6"],
+        [0, "PICKLEBALL 1"],
+        [1, "PICKLEBALL 8"],
         [2, "PICKLEBALL 3"],
-        [3, "PICKLEBALL 2"],
-        [4, "PICKLEBALL 9"],
-        [5, "PICKLEBALL 1"],
+        [3, "PICKLEBALL 9"],
+        [4, "PICKLEBALL 5"],
+        [5, "PICKLEBALL 6"],
         [6, "PICKLEBALL 7"],
-        [7, "PICKLEBALL 8"],
-        [8, "PICKLEBALL 10"],
-        [9, "PICKLEBALL 5"],
+        [7, "PICKLEBALL 10"],
+        [8, "PICKLEBALL 2"],
+        [9, "PICKLEBALL 4"],
     ]);
 }
 const CALENDAR_ID = '65b939118e3c9b5e436484429b3cecb9c9b6c7d326ba770071f1aeeb0d7a5bba@group.calendar.google.com';
@@ -394,7 +409,7 @@ async function run() {
         // After booking loop is complete and booking is confirmed
         const bookingTime = Date.now() - bookingStart;
         let confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim()).catch(() => null);
-        
+
         if (!confirmationNumber) {
             await page.waitForSelector("//div[text()='Confirmation Number']/following-sibling::div", { timeout: 5000 });
             confirmationNumber = await page.$eval("//div[text()='Confirmation Number']/following-sibling::div", el => el.textContent.trim());
