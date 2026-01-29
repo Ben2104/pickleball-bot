@@ -57,12 +57,12 @@ if (USER_NAME === 'Khoi Do') {
     if (todayAbbrev === 'SAT' || todayAbbrev === 'SUN') {
         TIME_SLOTS = ["6-6:30pm", "6:30-7pm", "7-7:30pm", "7:30-8pm"];
         courtPriorityMap = new Map([
-            [1, "PICKLEBALL 4"],
-            [0, "PICKLEBALL 2"],
-            [2, "PICKLEBALL 8"],
+            [1, "PICKLEBALL 2"],
+            [0, "PICKLEBALL 4"],
+            [2, "PICKLEBALL 6"],
             [3, "PICKLEBALL 9"],
             [4, "PICKLEBALL 3"],
-            [5, "PICKLEBALL 6"],
+            [5, "PICKLEBALL 8"],
             [6, "PICKLEBALL 7"],
             [7, "PICKLEBALL 1"],
             [8, "PICKLEBALL 5"],
@@ -105,16 +105,16 @@ else if (USER_NAME === 'Marvin') {
     }
     TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
+        [1, "PICKLEBALL 2"],
         [0, "PICKLEBALL 4"],
-        [1, "PICKLEBALL 6"],
-        [2, "PICKLEBALL 3"],
-        [3, "PICKLEBALL 2"],
-        [4, "PICKLEBALL 9"],
-        [5, "PICKLEBALL 1"],
+        [2, "PICKLEBALL 6"],
+        [3, "PICKLEBALL 9"],
+        [4, "PICKLEBALL 3"],
+        [5, "PICKLEBALL 8"],
         [6, "PICKLEBALL 7"],
-        [7, "PICKLEBALL 8"],
-        [8, "PICKLEBALL 10"],
-        [9, "PICKLEBALL 5"],
+        [7, "PICKLEBALL 1"],
+        [8, "PICKLEBALL 5"],
+        [9, "PICKLEBALL 10"],
     ]);
 }
 else if (USER_NAME === 'Elbert') {
