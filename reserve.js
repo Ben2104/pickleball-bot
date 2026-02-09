@@ -103,6 +103,9 @@ else if (USER_NAME === 'Marvin') {
             [9, "PICKLEBALL 4"],
         ]);
     }
+    else{
+        console.log("Skip Marvin on the weekday");
+    }
 }
 else if (USER_NAME === 'Charlee') {
     if (todayAbbrev === 'SAT' || todayAbbrev === 'SUN') {
