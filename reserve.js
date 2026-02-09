@@ -73,9 +73,9 @@ if (USER_NAME === 'Khoi Do') {
     else {
         TIME_SLOTS = ["5:30-6pm", "6-6:30pm", "6:30-7pm", "7-7:30pm"];
         courtPriorityMap = new Map([
-            [0, "PICKLEBALL 4"],
-            [1, "PICKLEBALL 3"],
-            [2, "PICKLEBALL 2"],
+            [0, "PICKLEBALL 2"],
+            [1, "PICKLEBALL 1"],
+            [2, "PICKLEBALL 6"],
             [3, "PICKLEBALL 8"],
             [4, "PICKLEBALL 9"],
             [5, "PICKLEBALL 6"],
