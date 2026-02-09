@@ -158,6 +158,26 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cl-report
+          path: |
+            pickleball-booking-results.zip
+            artifacts/
+            recordings/
+            *.png
+            *.webm
+          retention-days: 30
+          compression-level: 6
+
+      - name: Upload Video Recordings (Separate)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cl-screen-recording
+          path: |
+            recordings/*.webm
+            *.webm
+          retention-days: 30
+          compression-level: 1
+        continue-on-error: true
   Marvin-job:
     name: Marvin
     runs-on: ubuntu-latest
@@ -229,7 +249,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mv-screen-recording
+          name: cl-screen-recording
           path: |
             recordings/*.webm
             *.webm
