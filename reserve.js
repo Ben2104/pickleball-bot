@@ -105,6 +105,9 @@ else if (USER_NAME === 'Marvin') {
     }
 }
 else if (USER_NAME === 'Charlee') {
+    if (todayAbbrev === 'SAT' || todayAbbrev === 'SUN') {
+        console.log("Skip Charlee on the weekend");
+    }
         TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
         [1, "PICKLEBALL 2"],
