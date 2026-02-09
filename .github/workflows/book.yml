@@ -100,85 +100,142 @@ jobs:
         continue-on-error: true
 
 
+  Charlee-job:
+    name: Charlee
+    runs-on: ubuntu-latest
 
-  # Marvin-job:
-  #   name: Marvin
-  #   runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #         cache: 'npm'
-  #     - name: Show runner IP
-  #       run:
-  #         echo "Runner IP:"
-  #         echo $(curl -s https://api.ipify.org)
-  #     - name: Install dependencies
-  #       run: |
-  #         npm install
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Show runner IP
+        run:
+          echo "Runner IP:"
+          echo $(curl -s https://api.ipify.org) 
+      - name: Install dependencies
+        run: |
+          npm install
           
-  #     - name: Install Playwright Browsers
-  #       run: |
-  #         npx playwright install
+      - name: Install Playwright Browsers
+        run: |
+          npx playwright install
 
-  #     - name: Create recordings directory
-  #       run: |
-  #         mkdir -p recordings
-  #         echo "📁 Created recordings directory"
+      - name: Create recordings directory
+        run: |
+          mkdir -p recordings
+          echo "📁 Created recordings directory"
 
-  #     - name: Run Pickleball Booking Bot
-  #       run: |
-  #         echo "🎾 Starting pickleball court booking bot..."
-  #         echo "📅 Target booking time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
-  #         echo "🏟️ Court type: Pickleball"
-  #         echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
-  #         echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
+      - name: Run Pickleball Booking Bot
+        run: |
+          echo "🎾 Starting pickleball court booking bot..."
+          echo "📅 Target booking time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
+          echo "🏟️ Court type: Pickleball"
+          echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
+          echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
           
-  #         # Run with timeout protection
-  #         timeout 20m node reserve.js || echo "⚠️ Bot execution completed or timed out"
-  #       env:
-  #         EMAIL: ${{ secrets.EMAIL2 }}
-  #         PASSWORD: ${{ secrets.PASSWORD2 }}
-  #         USER_NAME: Marvin
-  #         BOOKING_HOUR: ${{ github.event.inputs.booking_hour || '7' }}
-  #         BOOKING_MINUTE: ${{ github.event.inputs.booking_minute || '0' }}
-  #         ENABLE_RECORDING: ${{ github.event.inputs.enable_recording || 'true' }}
-  #         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-  #         NODE_ENV: production
-  #         GITHUB_ACTIONS: true
-  #         TZ: America/Los_Angeles
-  #         NODE_OPTIONS: "--max-old-space-size=4096"
+          # Run with timeout protection
+          timeout 20m node reserve.js || echo "⚠️ Bot execution completed or timed out"
+        env:
+          EMAIL: ${{ secrets.EMAIL5 }}
+          PASSWORD: ${{ secrets.PASSWORD5 }}
+          USER_NAME: Charlee
+          BOOKING_HOUR: ${{ github.event.inputs.booking_hour || '7' }}
+          BOOKING_MINUTE: ${{ github.event.inputs.booking_minute || '0' }}
+          ENABLE_RECORDING: ${{ github.event.inputs.enable_recording || 'true' }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          NODE_ENV: production
+          GITHUB_ACTIONS: true
+          TZ: America/Los_Angeles
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
-  #     - name: Upload Booking Results
-  #       if: always()
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: mv-report
-  #         path: |
-  #           pickleball-booking-results.zip
-  #           artifacts/
-  #           recordings/
-  #           *.png
-  #           *.webm
-  #         retention-days: 30
-  #         compression-level: 6
+      - name: Upload Booking Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cl-report
+  Marvin-job:
+    name: Marvin
+    runs-on: ubuntu-latest
 
-  #     - name: Upload Video Recordings (Separate)
-  #       if: always()
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: mv-screen-recording
-  #         path: |
-  #           recordings/*.webm
-  #           *.webm
-  #         retention-days: 30
-  #         compression-level: 1
-  #       continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Show runner IP
+        run:
+          echo "Runner IP:"
+          echo $(curl -s https://api.ipify.org)
+      - name: Install dependencies
+        run: |
+          npm install
+          
+      - name: Install Playwright Browsers
+        run: |
+          npx playwright install
+
+      - name: Create recordings directory
+        run: |
+          mkdir -p recordings
+          echo "📁 Created recordings directory"
+
+      - name: Run Pickleball Booking Bot
+        run: |
+          echo "🎾 Starting pickleball court booking bot..."
+          echo "📅 Target booking time: ${{ github.event.inputs.booking_hour || '7' }}:${{ github.event.inputs.booking_minute || '0' }} PST"
+          echo "🏟️ Court type: Pickleball"
+          echo "🎬 Recording enabled: ${{ github.event.inputs.enable_recording || 'true' }}"
+          echo "🔗 Triggered by: ${{ github.event.client_payload.triggered_by || 'GitHub Actions' }}"
+          
+          # Run with timeout protection
+          timeout 20m node reserve.js || echo "⚠️ Bot execution completed or timed out"
+        env:
+          EMAIL: ${{ secrets.EMAIL2 }}
+          PASSWORD: ${{ secrets.PASSWORD2 }}
+          USER_NAME: Marvin
+          BOOKING_HOUR: ${{ github.event.inputs.booking_hour || '7' }}
+          BOOKING_MINUTE: ${{ github.event.inputs.booking_minute || '0' }}
+          ENABLE_RECORDING: ${{ github.event.inputs.enable_recording || 'true' }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          NODE_ENV: production
+          GITHUB_ACTIONS: true
+          TZ: America/Los_Angeles
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Upload Booking Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mv-report
+          path: |
+            pickleball-booking-results.zip
+            artifacts/
+            recordings/
+            *.png
+            *.webm
+          retention-days: 30
+          compression-level: 6
+
+      - name: Upload Video Recordings (Separate)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mv-screen-recording
+          path: |
+            recordings/*.webm
+            *.webm
+          retention-days: 30
+          compression-level: 1
+        continue-on-error: true
 
   Elbert-job:
     name: Elbert

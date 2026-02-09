@@ -103,7 +103,9 @@ else if (USER_NAME === 'Marvin') {
             [9, "PICKLEBALL 4"],
         ]);
     }
-    TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
+}
+else if (USER_NAME === 'Charlee') {
+        TIME_SLOTS = ["7:30-8pm", "8-8:30pm", "8:30-9pm", "9-9:30pm"];
     courtPriorityMap = new Map([
         [1, "PICKLEBALL 2"],
         [0, "PICKLEBALL 4"],
@@ -115,7 +117,7 @@ else if (USER_NAME === 'Marvin') {
         [7, "PICKLEBALL 1"],
         [8, "PICKLEBALL 5"],
         [9, "PICKLEBALL 10"],
-    ]);
+    ]); 
 }
 else if (USER_NAME === 'Elbert') {
     if (todayAbbrev === 'SAT' || todayAbbrev === 'SUN') {
