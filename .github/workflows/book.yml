@@ -48,7 +48,7 @@ jobs:
         run: bash scripts/ensure-node-modules.sh
 
       - name: Install Playwright Browsers
-        run: node scripts/ensure-chromium.js
+        run: bash scripts/ensure-chromium.sh
 
       - name: Create recordings directory
         run: |
@@ -128,7 +128,7 @@ jobs:
         run: bash scripts/ensure-node-modules.sh
 
       - name: Install Playwright Browsers
-        run: node scripts/ensure-chromium.js
+        run: bash scripts/ensure-chromium.sh
 
       - name: Create recordings directory
         run: |
@@ -206,7 +206,7 @@ jobs:
         run: bash scripts/ensure-node-modules.sh
 
       - name: Install Playwright Browsers
-        run: node scripts/ensure-chromium.js
+        run: bash scripts/ensure-chromium.sh
 
       - name: Create recordings directory
         run: |
@@ -285,7 +285,7 @@ jobs:
         run: bash scripts/ensure-node-modules.sh
 
       - name: Install Playwright Browsers
-        run: node scripts/ensure-chromium.js
+        run: bash scripts/ensure-chromium.sh
 
       - name: Create recordings directory
         run: |
@@ -363,7 +363,7 @@ jobs:
         run: bash scripts/ensure-node-modules.sh
 
       - name: Install Playwright Browsers
-        run: node scripts/ensure-chromium.js
+        run: bash scripts/ensure-chromium.sh
 
       - name: Create recordings directory
         run: |

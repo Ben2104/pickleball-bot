@@ -14,6 +14,8 @@ ROOT="${PICKLEBALL_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 cd "$ROOT"
 CACHE="${PICKLEBALL_DEPS_CACHE:-$HOME/.cache/pickleball-bot}"
 mkdir -p "$CACHE"
+exec 9>"$CACHE/npm-ci.lock"
+flock 9
 
 hash=$(sha256sum "$ROOT/package-lock.json" | awk '{print $1}')
 modules="$CACHE/node_modules"

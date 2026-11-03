@@ -23,6 +23,7 @@ for arg in "$@"; do
   prev=$arg
 done
 mkdir -p "$prefix/node_modules/playwright"
+sleep 0.2
 EOF
 chmod +x "$TMP/bin/npm"
 
@@ -49,4 +50,13 @@ printf 'lock-v2\n' > "$TMP/proj/package-lock.json"
 bash "$ROOT/scripts/ensure-node-modules.sh" >"$TMP/out3"
 test "$(wc -l < "$NPM_LOG")" -eq $((calls + 1))
 grep -q 'npm ci:' "$TMP/out3"
+
+rm -rf "$TMP/cache" "$TMP/proj/node_modules"
+: > "$NPM_LOG"
+printf 'lock-v1\n' > "$TMP/proj/package-lock.json"
+bash "$ROOT/scripts/ensure-node-modules.sh" >"$TMP/par-a" &
+bash "$ROOT/scripts/ensure-node-modules.sh" >"$TMP/par-b" &
+wait
+test "$(wc -l < "$NPM_LOG")" -eq 1
+cat "$TMP/par-a" "$TMP/par-b" | grep -q 'skip npm ci'
 echo "ensure-node-modules tests passed"

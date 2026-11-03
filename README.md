@@ -26,7 +26,11 @@ Due to the high demand for court reservations at iPickle Cerritos, it’s extrem
 - Google Calendar API
 ## Self-hosted runner
 
-The booking workflow runs on a self-hosted runner with the labels `self-hosted` and `linux`.
+The booking workflow runs five jobs at 7:00 AM.
+Register five runner instances with the labels `self-hosted` and `linux`.
+Give each instance its own work directory.
+One instance runs one job, so a single instance would start the later jobs after 7:00 AM.
+The install scripts lock the shared npm and Chromium caches, so those five jobs can start together.
 cron-jobs.org still starts it through `repository_dispatch`.
 Manual runs use `workflow_dispatch`.
 There is no `pull_request` trigger.
