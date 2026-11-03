@@ -45,12 +45,10 @@ jobs:
           echo "Runner IP:"
           echo $(curl -s https://api.ipify.org) 
       - name: Install dependencies
-        run: |
-          npm install
-          
+        run: bash scripts/ensure-node-modules.sh
+
       - name: Install Playwright Browsers
-        run: |
-          npx playwright install chromium
+        run: node scripts/ensure-chromium.js
 
       - name: Create recordings directory
         run: |
@@ -127,12 +125,10 @@ jobs:
           echo "Runner IP:"
           echo $(curl -s https://api.ipify.org) 
       - name: Install dependencies
-        run: |
-          npm install
-          
+        run: bash scripts/ensure-node-modules.sh
+
       - name: Install Playwright Browsers
-        run: |
-          npx playwright install chromium
+        run: node scripts/ensure-chromium.js
 
       - name: Create recordings directory
         run: |
@@ -207,12 +203,10 @@ jobs:
           echo "Runner IP:"
           echo $(curl -s https://api.ipify.org)
       - name: Install dependencies
-        run: |
-          npm install
-          
+        run: bash scripts/ensure-node-modules.sh
+
       - name: Install Playwright Browsers
-        run: |
-          npx playwright install chromium
+        run: node scripts/ensure-chromium.js
 
       - name: Create recordings directory
         run: |
@@ -288,12 +282,10 @@ jobs:
           echo "Runner IP:"
           echo $(curl -s https://api.ipify.org) 
       - name: Install dependencies
-        run: |
-          npm install
-          
+        run: bash scripts/ensure-node-modules.sh
+
       - name: Install Playwright Browsers
-        run: |
-          npx playwright install chromium
+        run: node scripts/ensure-chromium.js
 
       - name: Create recordings directory
         run: |
@@ -368,12 +360,10 @@ jobs:
           echo "Runner IP:"
           echo $(curl -s https://api.ipify.org) 
       - name: Install dependencies
-        run: |
-          npm install
-          
+        run: bash scripts/ensure-node-modules.sh
+
       - name: Install Playwright Browsers
-        run: |
-          npx playwright install chromium
+        run: node scripts/ensure-chromium.js
 
       - name: Create recordings directory
         run: |

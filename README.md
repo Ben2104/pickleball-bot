@@ -34,9 +34,12 @@ Set the dispatch input `dry_run` to stop before the Book click.
 `DRY_RUN=1` or `DRY_RUN=true` does the same thing for a local run.
 
 The VPS needs Node.js 20 or newer.
-The workflow installs Playwright's Chromium on each run (`npx playwright install chromium`).
+Install Chromium's system libraries once, as root: `sudo npx playwright install-deps chromium`.
+The job does not run apt.
 Playwright must be 1.64.1 or newer so Chromium has an Ubuntu 26.04 build.
-If that install reports missing system libraries, install them once with `sudo npx playwright install-deps chromium`.
+The job runs `npm ci` only when `node_modules/.lock-hash` does not match `package-lock.json`.
+The job runs `npx playwright install chromium` only when that version's Chromium executable is missing.
+Both caches live under the runner user's home directory, so the next run skips them.
 The job sets `NODE_ENV=production`, so Chromium is headless and xvfb is not required.
 
 GitHub Actions secrets, unchanged: `EMAIL`, `PASSWORD`, `EMAIL2`, `PASSWORD2`, `EMAIL3`, `PASSWORD3`, `EMAIL4`, `PASSWORD4`, `EMAIL5`, `PASSWORD5`, and `GOOGLE_CREDENTIALS`.
