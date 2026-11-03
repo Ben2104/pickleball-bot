@@ -24,6 +24,25 @@ Due to the high demand for court reservations at iPickle Cerritos, it’s extrem
 - Github Action
 - Cron-Jobs.org for scheduling
 - Google Calendar API
+## Self-hosted runner
+
+The booking workflow runs on a self-hosted runner with the labels `self-hosted` and `linux`.
+cron-jobs.org still starts it through `repository_dispatch`.
+Manual runs use `workflow_dispatch`.
+There is no `pull_request` trigger.
+Set the dispatch input `dry_run` to stop before the Book click.
+`DRY_RUN=1` or `DRY_RUN=true` does the same thing for a local run.
+
+The VPS needs Node.js 20 or newer.
+The workflow installs Playwright's Chromium on each run (`npx playwright install chromium`).
+Playwright must be 1.64.1 or newer so Chromium has an Ubuntu 26.04 build.
+If that install reports missing system libraries, install them once with `sudo npx playwright install-deps chromium`.
+The job sets `NODE_ENV=production`, so Chromium is headless and xvfb is not required.
+
+GitHub Actions secrets, unchanged: `EMAIL`, `PASSWORD`, `EMAIL2`, `PASSWORD2`, `EMAIL3`, `PASSWORD3`, `EMAIL4`, `PASSWORD4`, `EMAIL5`, `PASSWORD5`, and `GOOGLE_CREDENTIALS`.
+A local run needs `EMAIL` and `PASSWORD` in the environment.
+`GOOGLE_CREDENTIALS` is optional. Calendar writes are skipped when it is absent.
+
 ## 🔒 Disclaimer
 
 This tool is intended for **personal use only** and should be used responsibly. It does not bypass any security or fair usage rules set by iPickle Cerritos.

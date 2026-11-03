@@ -22,7 +22,8 @@ import {
     clickCheckout,
     addUsers,
     clickBook,
-    clickSelectDateAndTime
+    clickSelectDateAndTime,
+    isDryRun
 } from './functions.js';
 dotenv.config();
 
@@ -379,6 +380,7 @@ async function run() {
         let addUser = false;
         let click_next = false
         let book_clicked = false;
+        let dryStopped = false;
         await selectTimeSlots(page, sessionName, TIME_SLOTS);
         // let confirmationCount = await page.locator("//div[text()='Confirmation Number']/following-sibling::div").count();;
         try {
@@ -401,6 +403,11 @@ async function run() {
                 }
                 // Go to checkout
                 await clickCheckout(page, sessionName);
+                if (isDryRun()) {
+                    console.log('DRY_RUN: stopping before Book click');
+                    dryStopped = true;
+                    break;
+                }
                 // BOOK
                 const bookResult = await clickBook(page, sessionName, book_clicked);
                 if (bookResult) book_clicked = true;
@@ -413,6 +420,10 @@ async function run() {
             console.log("Booking may have worked, checking for true error");
         }
 
+        if (dryStopped) {
+            console.log('DRY_RUN: no booking submitted');
+            return;
+        }
 
         // After booking loop is complete and booking is confirmed
         const bookingTime = Date.now() - bookingStart;

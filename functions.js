@@ -3,6 +3,15 @@ import { google } from 'googleapis';
 import { readFileSync, existsSync } from 'fs';
 
 /**
+ * True when the run must stop before the Book click.
+ * Accepts DRY_RUN=1 or DRY_RUN=true.
+ */
+export function isDryRun(env = process.env) {
+    const value = env.DRY_RUN ? String(env.DRY_RUN).trim().toLowerCase() : '';
+    return value === '1' || value === 'true';
+}
+
+/**
  * Parse time slots to extract start and end times
  */
 export function parseTimeSlots(timeSlots) {

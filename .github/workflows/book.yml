@@ -16,13 +16,20 @@ on:
         type: boolean
         required: false
         default: true
+      dry_run:
+        description: 'Stop before the Book click'
+        type: boolean
+        required: false
+        default: false
   repository_dispatch: # Add this for cron-job.org
     types: [pickleball-booking]
+    # No pull_request trigger. This workflow runs on a self-hosted runner.
 
 jobs:
   Khoi-job:
     name: Khoi Do
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
 
     steps:
       - name: Checkout code
@@ -43,7 +50,7 @@ jobs:
           
       - name: Install Playwright Browsers
         run: |
-          npx playwright install
+          npx playwright install chromium
 
       - name: Create recordings directory
         run: |
@@ -72,6 +79,7 @@ jobs:
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
           NODE_OPTIONS: "--max-old-space-size=4096"
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '' }}
 
       - name: Upload Booking Results
         if: always()
@@ -102,7 +110,8 @@ jobs:
 
   Charlee-job:
     name: Charlee
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
 
     steps:
       - name: Checkout code
@@ -123,7 +132,7 @@ jobs:
           
       - name: Install Playwright Browsers
         run: |
-          npx playwright install
+          npx playwright install chromium
 
       - name: Create recordings directory
         run: |
@@ -152,6 +161,7 @@ jobs:
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
           NODE_OPTIONS: "--max-old-space-size=4096"
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '' }}
 
       - name: Upload Booking Results
         if: always()
@@ -180,7 +190,8 @@ jobs:
         continue-on-error: true
   Marvin-job:
     name: Marvin
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
 
     steps:
       - name: Checkout code
@@ -201,7 +212,7 @@ jobs:
           
       - name: Install Playwright Browsers
         run: |
-          npx playwright install
+          npx playwright install chromium
 
       - name: Create recordings directory
         run: |
@@ -230,6 +241,7 @@ jobs:
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
           NODE_OPTIONS: "--max-old-space-size=4096"
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '' }}
 
       - name: Upload Booking Results
         if: always()
@@ -259,7 +271,8 @@ jobs:
 
   Elbert-job:
     name: Elbert
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
 
     steps:
       - name: Checkout code
@@ -280,7 +293,7 @@ jobs:
           
       - name: Install Playwright Browsers
         run: |
-          npx playwright install
+          npx playwright install chromium
 
       - name: Create recordings directory
         run: |
@@ -309,6 +322,7 @@ jobs:
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
           NODE_OPTIONS: "--max-old-space-size=4096"
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '' }}
 
       - name: Upload Booking Results
         if: always()
@@ -337,7 +351,8 @@ jobs:
         continue-on-error: true
   Patrick-job:
     name: Patrick
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch'
 
     steps:
       - name: Checkout code
@@ -358,7 +373,7 @@ jobs:
           
       - name: Install Playwright Browsers
         run: |
-          npx playwright install
+          npx playwright install chromium
 
       - name: Create recordings directory
         run: |
@@ -387,6 +402,7 @@ jobs:
           GITHUB_ACTIONS: true
           TZ: America/Los_Angeles
           NODE_OPTIONS: "--max-old-space-size=4096"
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'true' && '1' || '' }}
 
       - name: Upload Booking Results
         if: always()
