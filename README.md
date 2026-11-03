@@ -24,6 +24,32 @@ Due to the high demand for court reservations at iPickle Cerritos, it’s extrem
 - Github Action
 - Cron-Jobs.org for scheduling
 - Google Calendar API
+## Self-hosted runner
+
+The booking workflow runs five jobs at 7:00 AM.
+Register five runner instances with the labels `self-hosted` and `linux`.
+Give each instance its own work directory.
+One instance runs one job, so a single instance would start the later jobs after 7:00 AM.
+The install scripts lock the shared npm and Chromium caches, so those five jobs can start together.
+cron-jobs.org still starts it through `repository_dispatch`.
+Manual runs use `workflow_dispatch`.
+There is no `pull_request` trigger.
+Set the dispatch input `dry_run` to stop before the Book click.
+`DRY_RUN=1` or `DRY_RUN=true` does the same thing for a local run.
+
+The VPS needs Node.js 20 or newer.
+Install Chromium's system libraries once, as root: `sudo npx playwright install-deps chromium`.
+The job does not run apt.
+Playwright must be 1.64.1 or newer so Chromium has an Ubuntu 26.04 build.
+The job runs `npm ci` only when `node_modules/.lock-hash` does not match `package-lock.json`.
+The job runs `npx playwright install chromium` only when that version's Chromium executable is missing.
+Both caches live under the runner user's home directory, so the next run skips them.
+The job sets `NODE_ENV=production`, so Chromium is headless and xvfb is not required.
+
+GitHub Actions secrets, unchanged: `EMAIL`, `PASSWORD`, `EMAIL2`, `PASSWORD2`, `EMAIL3`, `PASSWORD3`, `EMAIL4`, `PASSWORD4`, `EMAIL5`, `PASSWORD5`, and `GOOGLE_CREDENTIALS`.
+A local run needs `EMAIL` and `PASSWORD` in the environment.
+`GOOGLE_CREDENTIALS` is optional. Calendar writes are skipped when it is absent.
+
 ## 🔒 Disclaimer
 
 This tool is intended for **personal use only** and should be used responsibly. It does not bypass any security or fair usage rules set by iPickle Cerritos.
